@@ -22,7 +22,14 @@ def main():
 
     # Fetch and process data
     print("Fetching data from GitHub API...")
-    engine = AnalyticsEngine(client)
+    
+    # Parse team members list (comma separated GitHub usernames)
+    team_members = []
+    if Config.TEAM_MEMBERS:
+        team_members = [m.strip() for m in Config.TEAM_MEMBERS.split(',') if m.strip()]
+        print(f"Tracking {len(team_members)} team members for activity...")
+    
+    engine = AnalyticsEngine(client, team_members=team_members)
     report_data = engine.run_daily_analytics()
     
     # Generate HTML Report
