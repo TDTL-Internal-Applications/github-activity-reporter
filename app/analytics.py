@@ -5,9 +5,10 @@ from app.github_client import GitHubClient
 from app.alerts import detect_alerts
 
 class AnalyticsEngine:
-    def __init__(self, client: GitHubClient):
+    def __init__(self, client: GitHubClient, team_members: list = None):
         self.client = client
         self.ist_tz = pytz.timezone('Asia/Kolkata')
+        self.team_members = team_members or []
 
     def get_start_and_end_of_day_utc(self):
         # We want "today" in IST, converted to UTC bounds for GitHub API
@@ -34,8 +35,14 @@ class AnalyticsEngine:
         active_developers = set()
         active_developer_logins = set()
         
+        # Build full team list from org members OR manual TEAM_MEMBERS list
         all_members = self.client.get_org_members()
         org_member_logins = {member['login'] for member in all_members}
+        
+        # Also add manually configured team members
+        if self.team_members:
+            for member in self.team_members:
+                org_member_logins.add(member.strip())
         
         for repo in repos:
             repo_name = repo['name']
