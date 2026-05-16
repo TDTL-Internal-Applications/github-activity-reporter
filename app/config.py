@@ -12,6 +12,7 @@ class Config:
     SMTP_EMAIL = os.getenv("SMTP_EMAIL")
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
     RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
+    TEAM_MEMBERS = os.getenv("TEAM_MEMBERS", "")
 
     @classmethod
     def validate(cls):
