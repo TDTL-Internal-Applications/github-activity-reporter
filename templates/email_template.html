@@ -228,35 +228,6 @@
             </tbody>
         </table>
 
-        <!-- 8. DEVELOPERS WHO DIDN'T PUSH CODE TODAY -->
-        {% if inactive_developers %}
-        <h2 style="color: #dc3545;">8. ⚠️ Developers Who Didn't Push Code Today</h2>
-        <div style="background-color: #fff5f5; border-left: 4px solid #dc3545; padding: 15px; margin-bottom: 20px;">
-            <p style="margin: 0 0 10px 0; color: #721c24;"><strong>The following {{ inactive_developers|length }} developer(s) have not pushed any code today:</strong></p>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>GitHub Username</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for dev in inactive_developers %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ dev.login }}</td>
-                    <td><span class="badge badge-danger">No Activity</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <h2 style="color: #28a745;">8. ✅ All Developers Pushed Code Today!</h2>
-        <p>Every team member has committed code today. Great job!</p>
-        {% endif %}
-
         <div class="footer">
             Automated Daily GitHub Engineering Report • Generated via Python
         </div>
