@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Daily GitHub Engineering Report</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
+        tr:hover { background-color: #f1f3f5; }
+        .success { color: #28a745; font-weight: bold; }
+        .danger { color: #dc3545; font-weight: bold; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge-danger { background-color: #dc3545; color: white; }
+        .badge-success { background-color: #28a745; color: white; }
+        .summary-cards { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; }
+        .card { background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1; min-width: 120px; text-align: center; border: 1px solid #dee2e6; }
+        .card-value { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
+        .card-label { font-size: 12px; color: #6c757d; text-transform: uppercase; }
+        .alert-section { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 30px; }
+        .alert-item { margin-bottom: 10px; }
+        .footer { text-align: center; font-size: 12px; color: #adb5bd; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GitHub Engineering Activity Report</h1>
+        <p>Date: {{ date }}</p>
+
+        <!-- 1. EXECUTIVE SUMMARY -->
+        <h2>1. Executive Summary</h2>
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-value">{{ exec.total_active_developers }}</div>
+                <div class="card-label">Active Devs</div>
+            </div>
+            <div class="card">
+                <div class="card-value">{{ exec.total_commits_today }}</div>
+                <div class="card-label">Commits Today</div>
+            </div>
+            <div class="card">
+                <div class="card-value">{{ exec.total_repos_changed }}</div>
+                <div class="card-label">Repos Changed</div>
+            </div>
+            <div class="card">
+                <div class="card-value success">+{{ exec.total_lines_added }}</div>
+                <div class="card-label">Lines Added</div>
+            </div>
+            <div class="card">
+                <div class="card-value danger">-{{ exec.total_lines_deleted }}</div>
+                <div class="card-label">Lines Deleted</div>
+            </div>
+            <div class="card">
+                <div class="card-value">{{ exec.total_prs_opened }}</div>
+                <div class="card-label">PRs Opened</div>
+            </div>
+            <div class="card">
+                <div class="card-value">{{ exec.total_prs_merged }}</div>
+                <div class="card-label">PRs Merged</div>
+            </div>
+        </div>
+
+        <!-- 5. ALERTS SECTION -->
+        {% if alerts %}
+        <h2>5. Alerts</h2>
+        <div class="alert-section">
+            {% for alert in alerts %}
+            <div class="alert-item">
+                <span class="badge badge-danger">ALERT</span> 
+                <strong>{{ alert.alert }}</strong> by {{ alert.developer }} in {{ alert.repo }} 
+                (<a href="{{ alert.url }}">{{ alert.sha }}</a>)
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 2. DEVELOPER-WISE ACTIVITY -->
+        <h2>2. Developer-wise Activity</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Developer</th>
+                    <th>Repository</th>
+                    <th>Commits</th>
+                    <th>Files</th>
+                    <th>Added</th>
+                    <th>Deleted</th>
+                    <th>Net</th>
+                    <th>Last Push (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dev in dev_activity %}
+                <tr>
+                    <td>{{ dev.dev_name }}</td>
+                    <td>{{ dev.repo_name }}</td>
+                    <td>{{ dev.commits }}</td>
+                    <td>{{ dev.files_changed }}</td>
+                    <td class="success">+{{ dev.lines_added }}</td>
+                    <td class="danger">-{{ dev.lines_deleted }}</td>
+                    <td>{{ dev.lines_added - dev.lines_deleted }}</td>
+                    <td>{{ dev.last_push[:19].replace('T', ' ') if dev.last_push else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+                {% if not dev_activity %}
+                <tr><td colspan="8" style="text-align: center;">No activity today.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- 3. COMMIT DETAILS -->
+        <h2>3. Commit Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Developer</th>
+                    <th>Repository</th>
+                    <th>Message</th>
+                    <th>SHA</th>
+                    <th>Time (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commit in commits[:50] %} <!-- Limit to 50 for email size -->
+                <tr>
+                    <td>{{ commit.commit.author.name }}</td>
+                    <td>{{ commit.html_url.split('/')[4] if commit.html_url else 'Unknown' }}</td>
+                    <td>{{ commit.commit.message.split('\n')[0][:50] }}...</td>
+                    <td><a href="{{ commit.html_url }}">{{ commit.sha[:7] }}</a></td>
+                    <td>{{ commit.commit.author.date[:19].replace('T', ' ') }}</td>
+                </tr>
+                {% endfor %}
+                {% if not commits %}
+                <tr><td colspan="5" style="text-align: center;">No commits today.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- 4. PULL REQUEST DETAILS -->
+        <h2>4. Pull Request Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Repository</th>
+                    <th>Developer</th>
+                    <th>Status</th>
+                    <th>Created (UTC)</th>
+                    <th>Merged (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pr in prs %}
+                <tr>
+                    <td><a href="{{ pr.html_url }}">{{ pr.title[:40] }}...</a></td>
+                    <td>{{ pr.base.repo.name }}</td>
+                    <td>{{ pr.user.login }}</td>
+                    <td>
+                        {% if pr.merged_at %}
+                        <span class="badge badge-success">Merged</span>
+                        {% elif pr.state == 'closed' %}
+                        <span class="badge badge-danger">Closed</span>
+                        {% else %}
+                        <span class="badge" style="background: #17a2b8; color: white;">Open</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ pr.created_at[:19].replace('T', ' ') }}</td>
+                    <td>{{ pr.merged_at[:19].replace('T', ' ') if pr.merged_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+                {% if not prs %}
+                <tr><td colspan="6" style="text-align: center;">No pull requests today.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- 6. INACTIVE DEVELOPERS -->
+        {% if inactive_developers %}
+        <h2>6. Inactive Developers (Warning Sent)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Developer Username</th>
+                    <th>Email Found</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dev in inactive_developers %}
+                <tr>
+                    <td>{{ dev.login }}</td>
+                    <td>{{ dev.email if dev.email else 'Private (Email Skipped)' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- 7. REPOSITORY SUMMARY -->
+        <h2>7. Repository Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Repository</th>
+                    <th>Total Commits</th>
+                    <th>Contributors</th>
+                    <th>Lines Added</th>
+                    <th>Lines Deleted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repo_name, stats in repo_summary.items() %}
+                {% if stats.total_commits > 0 %}
+                <tr>
+                    <td>{{ repo_name }}</td>
+                    <td>{{ stats.total_commits }}</td>
+                    <td>{{ stats.contributors }}</td>
+                    <td class="success">+{{ stats.lines_added }}</td>
+                    <td class="danger">-{{ stats.lines_deleted }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                {% if not repo_summary %}
+                <tr><td colspan="5" style="text-align: center;">No active repositories today.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            Automated Daily GitHub Engineering Report • Generated via Python
+        </div>
+    </div>
+</body>
+</html>
