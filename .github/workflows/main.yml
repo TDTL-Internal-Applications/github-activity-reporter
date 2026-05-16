@@ -27,7 +27,7 @@ jobs:
       - name: Run Report Generator
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_TOKEN }}
-          GITHUB_ORG_NAME: ${{ secrets.GITHUB_ORG_NAME }}
+          GITHUB_ORG_NAME: ${{ secrets.ORG_NAME }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
