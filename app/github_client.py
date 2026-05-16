@@ -41,8 +41,16 @@ class GitHubClient:
         return results
 
     def get_org_repos(self) -> List[Dict]:
+        # Try organization endpoint first, fall back to user endpoint
         url = f"{self.base_url}/orgs/{self.org_name}/repos"
-        return self._get_paginated(url, params={"type": "all"})
+        response = requests.get(url, headers=self.headers, params={"type": "all", "per_page": 1})
+        if response.status_code == 404:
+            print(f"'{self.org_name}' is not an org, trying as a user account...")
+            url = f"{self.base_url}/users/{self.org_name}/repos"
+            return self._get_paginated(url, params={"type": "all"})
+        return self._get_paginated(
+            f"{self.base_url}/orgs/{self.org_name}/repos", params={"type": "all"}
+        )
 
     def get_commits_for_repo(self, repo_name: str, since: str, until: str) -> List[Dict]:
         url = f"{self.base_url}/repos/{self.org_name}/{repo_name}/commits"
@@ -61,7 +69,6 @@ class GitHubClient:
         return {}
 
     def get_pull_requests_for_repo(self, repo_name: str) -> List[Dict]:
-        # We fetch recently updated PRs and filter them in the analytics layer
         url = f"{self.base_url}/repos/{self.org_name}/{repo_name}/pulls"
         params = {"state": "all", "sort": "updated", "direction": "desc"}
         try:
@@ -71,9 +78,16 @@ class GitHubClient:
             return []
 
     def get_org_members(self) -> List[Dict]:
+        # Try organization endpoint first; personal accounts don't have members
         url = f"{self.base_url}/orgs/{self.org_name}/members"
+        response = requests.get(url, headers=self.headers, params={"per_page": 1})
+        if response.status_code == 404:
+            print(f"'{self.org_name}' is a personal account. Skipping org members lookup.")
+            return []
         try:
-            return self._get_paginated(url)
+            return self._get_paginated(
+                f"{self.base_url}/orgs/{self.org_name}/members"
+            )
         except requests.exceptions.RequestException as e:
             print(f"Error fetching org members: {e}")
             return []
