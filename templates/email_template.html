@@ -77,8 +77,8 @@
         </div>
         {% endif %}
 
-        <!-- 2. DEVELOPER-WISE ACTIVITY -->
-        <h2>2. Developer-wise Activity</h2>
+        <!-- 2. DEVELOPER ACCOUNTABILITY DASHBOARD -->
+        <h2>2. Developer Accountability Dashboard</h2>
         <table>
             <thead>
                 <tr>
@@ -94,19 +94,33 @@
             </thead>
             <tbody>
                 {% for dev in dev_activity %}
-                <tr>
-                    <td>{{ dev.dev_name }}</td>
-                    <td>{{ dev.repo_name }}</td>
-                    <td>{{ dev.commits }}</td>
-                    <td>{{ dev.files_changed }}</td>
-                    <td class="success">+{{ dev.lines_added }}</td>
-                    <td class="danger">-{{ dev.lines_deleted }}</td>
-                    <td>{{ dev.lines_added - dev.lines_deleted }}</td>
-                    <td>{{ dev.last_push[:19].replace('T', ' ') if dev.last_push else 'N/A' }}</td>
-                </tr>
+                {% set repos_count = dev.repos|length %}
+                {% if repos_count > 0 %}
+                    {% for repo in dev.repos %}
+                    <tr style="background-color: {{ '#ffffff' if loop.parent.index % 2 == 1 else '#f8f9fa' }};">
+                        {% if loop.index == 1 %}
+                        <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
+                            {{ dev.developer_name }}<br>
+                            <small style="color: #6c757d; font-weight: normal;">@{{ dev.github_username }}</small>
+                        </td>
+                        {% endif %}
+                        <td>{{ repo.repo_name }}</td>
+                        {% if repo.commits > 0 %}
+                            <td>{{ repo.commits }}</td>
+                            <td>{{ repo.files_changed }}</td>
+                            <td class="success">+{{ repo.lines_added }}</td>
+                            <td class="danger">-{{ repo.lines_deleted }}</td>
+                            <td>{{ repo.lines_added - repo.lines_deleted }}</td>
+                            <td>{{ repo.last_push[:19].replace('T', ' ') }}</td>
+                        {% else %}
+                            <td colspan="6" style="text-align: center; color: #dc3545; font-weight: bold; background-color: rgba(220,53,69,0.05);">⛔ No Push</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                {% endif %}
                 {% endfor %}
                 {% if not dev_activity %}
-                <tr><td colspan="8" style="text-align: center;">No activity today.</td></tr>
+                <tr><td colspan="8" style="text-align: center;">No developer config found.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -227,6 +241,8 @@
                 {% endif %}
             </tbody>
         </table>
+
+
 
         <div class="footer">
             Automated Daily GitHub Engineering Report • Generated via Python
