@@ -18,24 +18,7 @@ def detect_alerts(commit: Dict, prs: List[Dict]) -> List[str]:
     if total_changes > 5000:
         alerts.append(f"Massive commit ({total_changes} lines changed)")
         
-    # Commits without PR
-    commit_sha = commit.get('sha')
-    has_pr = False
-    for pr in prs:
-        # A simple check: if commit sha is in PR's merge_commit_sha, or if we had PR commits (too many API calls to fetch all PR commits).
-        # We can approximate by checking if the commit message contains "Merge pull request" or if it matches a PR's merge commit.
-        if pr.get('merge_commit_sha') == commit_sha:
-            has_pr = True
-            break
-            
-    # For a more thorough check, we look for PR numbers in commit messages (e.g., (#123))
-    import re
-    if re.search(r'\(#\d+\)', commit.get('commit', {}).get('message', '')):
-        has_pr = True
-        
-    if not has_pr and "Merge pull request" not in commit.get('commit', {}).get('message', ''):
-        alerts.append("Commit without PR / Direct Push")
-        
+
     # Suspicious late-night pushes (10 PM to 6 AM IST)
     # Commit time is usually in UTC. Convert to IST.
     commit_date_str = commit.get('commit', {}).get('committer', {}).get('date')
