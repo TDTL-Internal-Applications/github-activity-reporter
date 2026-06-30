@@ -1,0 +1,109 @@
+{
+  "developers": [
+    {
+      "name": "Achyut Panchal",
+      "github_username": "Achyut-TDTL",
+      "assigned_repos": ["360-Fitness-backend", "ICICI-BRS-Backend"]
+    },
+    {
+      "name": "Mahesh Biradar",
+      "github_username": "Mahesh-Tdtl",
+      "assigned_repos": ["AaaS-backend", "HDFC-Backend", "ICICI-BRS-Backend", "ICICI-CHATBOT-Backend", "AI-Fraud-backend"]
+    },
+    {
+      "name": "Trushant Talla",
+      "github_username": "Trushant-TDTL",
+      "assigned_repos": ["AaaS", "PCMC", "KAASDEV", "Tata-demo"]
+    },
+    {
+      "name": "Anushka Patil",
+      "github_username": "anushkapatil26",
+      "assigned_repos": ["IMSG-JWT", "Findoc-backend"]
+    },
+    {
+      "name": "Atharva Desai",
+      "github_username": "Atharva-Tdtl",
+      "assigned_repos": ["DigiCampus-backend", "DigiCampus", "Elephant-tank-backend", "Elephant-tank", "MaaS-backend", "MaaS", "Pune-Expo-backend", "Resource-Optimization-backend", "Resource-Optimization", "Dattakala", "DB-Shiksha-backend", "DSS-AAAS-Backend", "HRMSTDTL"]
+    },
+    {
+      "name": "Ajay Shinde",
+      "github_username": "AjayShinde-Tdtl",
+      "assigned_repos": ["Elephant-tank-backend", "Production-Management-backend", "Pune-Expo-backend", "Karnataka-School-backend", "Findoc-backend"]
+    },
+    {
+      "name": "Nikita Jejurkar",
+      "github_username": "nikitatdtl1",
+      "assigned_repos": ["GateP-Backend"]
+    },
+    {
+      "name": "Mahima Sutar",
+      "github_username": "MahimaTdtl",
+      "assigned_repos": ["GateP", "TMC"]
+    },
+    {
+      "name": "Sonali Dalvi",
+      "github_username": "SonaliDalvi-tdtl",
+      "assigned_repos": ["HDFC", "ICICI-CHATBOT", "Vetrina-SCM-React"]
+    },
+    {
+      "name": "Shivam Mhetre",
+      "github_username": "shivam-tdtl",
+      "assigned_repos": ["HRMSTDTL-Backend", "New-HRMS-backend", "Productivity-Backend", "TMC-backend", "Vetrina-SCM-React"]
+    },
+    {
+      "name": "Riyaj Mujawar",
+      "github_username": "riyaj-tdtl",
+      "assigned_repos": ["HRMSTDTL", "DB-Shiksha", "DSS-Gatep-Backend", "DSS-KAAS-Backend", "New-HRMS"]
+    },
+    {
+      "name": "Quadir",
+      "github_username": "QadirullaTDTL",
+      "assigned_repos": ["Kaasdev-Backend", "Tata-demo-backend"]
+    },
+    {
+      "name": "Atharva Jadhav",
+      "github_username": "atharvsj07",
+      "assigned_repos": ["Karnataka-School-backend", "Dattakala-Backend"]
+    },
+    {
+      "name": "Siddheshwar Kadam",
+      "github_username": "11tdtlsiddheshwar",
+      "assigned_repos": ["PCMC-Backend"]
+    },
+    {
+      "name": "Atul Jadhav",
+      "github_username": "tdtl-Atul",
+      "assigned_repos": ["PCMC-Backend"]
+    },
+    {
+      "name": "Tanvi Pansare",
+      "github_username": "Tanvipansare77",
+      "assigned_repos": ["AaaS-backend"]
+    },
+    {
+      "name": "Kartik Tambat",
+      "github_username": "kartiktambat-tdtl",
+      "assigned_repos": ["Findoc-frontend"]
+    },
+    {
+      "name": "Mangesh Pagare",
+      "github_username": "Mangeshpagare011",
+      "assigned_repos": ["Gramin-AI", "Gramin-AI-backend", "NitiX-AI", "NitiX-AI-backend", "AI-Fraud"]
+    },
+    {
+      "name": "Shruti Shitole",
+      "github_username": "Shruti-tdtl",
+      "assigned_repos": ["TMC-emergency-system"]
+    },
+    {
+      "name": "Shruti Thorat",
+      "github_username": "ShrutiTdtl",
+      "assigned_repos": ["workshop_registration-backend"]
+    },
+    {
+      "name": "Suhani Jain",
+      "github_username": "suhaniTDTL",
+      "assigned_repos": ["workshop_registration"]
+    }
+  ]
+}

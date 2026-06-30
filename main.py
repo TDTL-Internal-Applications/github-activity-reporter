@@ -1,4 +1,6 @@
 import sys
+import os
+import json
 from app.config import Config
 from app.github_client import GitHubClient
 from app.analytics import AnalyticsEngine
@@ -23,13 +25,14 @@ def main():
     # Fetch and process data
     print("Fetching data from GitHub API...")
     
-    # Parse team members list (comma separated GitHub usernames)
-    team_members = []
-    if Config.TEAM_MEMBERS:
-        team_members = [m.strip() for m in Config.TEAM_MEMBERS.split(',') if m.strip()]
-        print(f"Tracking {len(team_members)} team members for activity...")
+    # Load team config
+    team_config = {}
+    if os.path.exists("team_config.json"):
+        with open("team_config.json", "r", encoding="utf-8") as f:
+            team_config = json.load(f)
+            print(f"Loaded team config for {len(team_config.get('developers', []))} developers.")
     
-    engine = AnalyticsEngine(client, team_members=team_members)
+    engine = AnalyticsEngine(client, team_config=team_config)
     report_data = engine.run_daily_analytics()
     
     # Generate HTML Report
