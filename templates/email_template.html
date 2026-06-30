@@ -94,10 +94,11 @@
             </thead>
             <tbody>
                 {% for dev in dev_activity %}
+                {% set outer_loop = loop %}
                 {% set repos_count = dev.repos|length %}
                 {% if repos_count > 0 %}
                     {% for repo in dev.repos %}
-                    <tr style="background-color: {{ '#ffffff' if loop.parent.index % 2 == 1 else '#f8f9fa' }};">
+                    <tr style="background-color: {{ '#ffffff' if outer_loop.index % 2 == 1 else '#f8f9fa' }};">
                         {% if loop.index == 1 %}
                         <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
                             {{ dev.developer_name }}<br>
