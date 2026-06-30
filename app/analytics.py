@@ -5,10 +5,10 @@ from app.github_client import GitHubClient
 from app.alerts import detect_alerts
 
 class AnalyticsEngine:
-    def __init__(self, client: GitHubClient, team_members: list = None):
+    def __init__(self, client: GitHubClient, team_config: dict = None):
         self.client = client
         self.ist_tz = pytz.timezone('Asia/Kolkata')
-        self.team_members = team_members or []
+        self.team_config = team_config or {}
 
     def get_start_and_end_of_day_utc(self):
         # We want "today" in IST, converted to UTC bounds for GitHub API
@@ -28,21 +28,33 @@ class AnalyticsEngine:
         all_commits = []
         all_prs = []
         
-        developer_stats = {}
         repo_stats = {}
         alerts_list = []
         
         active_developers = set()
         active_developer_logins = set()
         
-        # Build full team list from org members OR manual TEAM_MEMBERS list
+        # Build full team list from org members
         all_members = self.client.get_org_members()
         org_member_logins = {member['login'] for member in all_members}
         
-        # Also add manually configured team members
-        if self.team_members:
-            for member in self.team_members:
-                org_member_logins.add(member.strip())
+        # Initialize developer stats from config
+        dev_accountability = {}
+        for dev in self.team_config.get('developers', []):
+            username = dev['github_username']
+            org_member_logins.add(username)
+            dev_accountability[username] = {
+                'name': dev['name'],
+                'repos': {}
+            }
+            for repo in dev['assigned_repos']:
+                dev_accountability[username]['repos'][repo] = {
+                    'commits': 0,
+                    'files_changed': 0,
+                    'lines_added': 0,
+                    'lines_deleted': 0,
+                    'last_push': ""
+                }
         
         for repo in repos:
             repo_name = repo['name']
@@ -100,11 +112,16 @@ class AnalyticsEngine:
                 repo_stats[repo_name]['lines_deleted'] += deletions
                 
                 # Developer stats update
-                dev_key = f"{author_name}_{repo_name}"
-                if dev_key not in developer_stats:
-                    developer_stats[dev_key] = {
-                        'dev_name': author_name,
-                        'repo_name': repo_name,
+                dev_key = author_login if author_login else author_name
+                
+                if dev_key not in dev_accountability:
+                    dev_accountability[dev_key] = {
+                        'name': author_name,
+                        'repos': {}
+                    }
+                    
+                if repo_name not in dev_accountability[dev_key]['repos']:
+                    dev_accountability[dev_key]['repos'][repo_name] = {
                         'commits': 0,
                         'files_changed': 0,
                         'lines_added': 0,
@@ -112,14 +129,15 @@ class AnalyticsEngine:
                         'last_push': ""
                     }
                     
-                developer_stats[dev_key]['commits'] += 1
-                developer_stats[dev_key]['files_changed'] += files_changed
-                developer_stats[dev_key]['lines_added'] += additions
-                developer_stats[dev_key]['lines_deleted'] += deletions
+                repo_stats_dev = dev_accountability[dev_key]['repos'][repo_name]
+                repo_stats_dev['commits'] += 1
+                repo_stats_dev['files_changed'] += files_changed
+                repo_stats_dev['lines_added'] += additions
+                repo_stats_dev['lines_deleted'] += deletions
                 
                 commit_time = commit_detail.get('commit', {}).get('author', {}).get('date', '')
-                if commit_time > developer_stats[dev_key]['last_push']:
-                    developer_stats[dev_key]['last_push'] = commit_time
+                if commit_time > repo_stats_dev['last_push']:
+                    repo_stats_dev['last_push'] = commit_time
                 
                 # Alerts
                 commit_alerts = detect_alerts(commit_detail, today_prs)
@@ -163,8 +181,30 @@ class AnalyticsEngine:
             'total_prs_merged': pr_merged
         }
 
-        # Convert dev stats to list
-        dev_activity = list(developer_stats.values())
+        # Transform nested dict into sorted list for template
+        dev_activity_nested = []
+        for dev_key, dev_info in dev_accountability.items():
+            repos_list = []
+            for r_name, r_stats in dev_info['repos'].items():
+                repos_list.append({
+                    'repo_name': r_name,
+                    'commits': r_stats['commits'],
+                    'files_changed': r_stats['files_changed'],
+                    'lines_added': r_stats['lines_added'],
+                    'lines_deleted': r_stats['lines_deleted'],
+                    'last_push': r_stats['last_push']
+                })
+            
+            repos_list.sort(key=lambda x: x['repo_name'])
+            dev_activity_nested.append({
+                'developer_name': dev_info['name'],
+                'github_username': dev_key,
+                'repos': repos_list,
+                'total_commits': sum(r['commits'] for r in repos_list)
+            })
+            
+        dev_activity_nested.sort(key=lambda x: (-x['total_commits'], x['developer_name']))
+        dev_activity = dev_activity_nested
         
         return {
             'executive_summary': executive_summary,
