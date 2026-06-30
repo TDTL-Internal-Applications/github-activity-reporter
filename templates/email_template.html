@@ -32,36 +32,42 @@
 
         <!-- 1. EXECUTIVE SUMMARY -->
         <h2>1. Executive Summary</h2>
-        <div class="summary-cards">
-            <div class="card">
-                <div class="card-value">{{ exec.total_active_developers }}</div>
-                <div class="card-label">Active Devs</div>
-            </div>
-            <div class="card">
-                <div class="card-value">{{ exec.total_commits_today }}</div>
-                <div class="card-label">Commits Today</div>
-            </div>
-            <div class="card">
-                <div class="card-value">{{ exec.total_repos_changed }}</div>
-                <div class="card-label">Repos Changed</div>
-            </div>
-            <div class="card">
-                <div class="card-value success">+{{ exec.total_lines_added }}</div>
-                <div class="card-label">Lines Added</div>
-            </div>
-            <div class="card">
-                <div class="card-value danger">-{{ exec.total_lines_deleted }}</div>
-                <div class="card-label">Lines Deleted</div>
-            </div>
-            <div class="card">
-                <div class="card-value">{{ exec.total_prs_opened }}</div>
-                <div class="card-label">PRs Opened</div>
-            </div>
-            <div class="card">
-                <div class="card-value">{{ exec.total_prs_merged }}</div>
-                <div class="card-label">PRs Merged</div>
-            </div>
-        </div>
+        <table width="100%" cellpadding="10" cellspacing="10" style="margin-bottom: 10px; border: none; background-color: transparent;">
+            <tr>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_active_developers }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Active Devs</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_commits_today }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Commits Today</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_repos_changed }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Repos Changed</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745; margin-bottom: 5px;">+{{ exec.total_lines_added }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Lines Added</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">-{{ exec.total_lines_deleted }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Lines Deleted</div>
+                </td>
+            </tr>
+        </table>
+        <table width="100%" cellpadding="10" cellspacing="10" style="margin-bottom: 30px; border: none; background-color: transparent;">
+            <tr>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 50%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_opened }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Opened</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 50%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_merged }}</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Merged</div>
+                </td>
+            </tr>
+        </table>
 
         <!-- 5. ALERTS SECTION -->
         {% if alerts %}
