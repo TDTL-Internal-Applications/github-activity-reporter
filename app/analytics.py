@@ -21,8 +21,19 @@ class AnalyticsEngine:
         
         return start_utc.strftime("%Y-%m-%dT%H:%M:%SZ"), end_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    def get_yesterday_bounds_utc(self):
+        from datetime import timedelta
+        now_ist = datetime.now(self.ist_tz)
+        yesterday_ist = now_ist - timedelta(days=1)
+        start_of_day_ist = yesterday_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day_ist = yesterday_ist.replace(hour=23, minute=59, second=59, microsecond=999999)
+        start_utc = start_of_day_ist.astimezone(pytz.utc)
+        end_utc = end_of_day_ist.astimezone(pytz.utc)
+        return start_utc.strftime("%Y-%m-%dT%H:%M:%SZ"), end_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     def run_daily_analytics(self) -> Dict[str, Any]:
         since, until = self.get_start_and_end_of_day_utc()
+        y_since, y_until = self.get_yesterday_bounds_utc()
         repos = self.client.get_org_repos()
         
         all_commits = []
@@ -33,6 +44,7 @@ class AnalyticsEngine:
         
         active_developers = set()
         active_developer_logins = set()
+        yesterday_total_commits = 0
         
         # Build full team list from org members
         all_members = self.client.get_org_members()
@@ -53,7 +65,8 @@ class AnalyticsEngine:
                     'files_changed': 0,
                     'lines_added': 0,
                     'lines_deleted': 0,
-                    'last_push': ""
+                    'last_push': "",
+                    'is_first_push': False
                 }
         
         for repo in repos:
@@ -67,6 +80,11 @@ class AnalyticsEngine:
             
             # Fetch commits
             commits = self.client.get_commits_for_repo(repo_name, since, until)
+            
+            # Fetch yesterday commits for velocity trend
+            y_commits = self.client.get_commits_for_repo(repo_name, y_since, y_until)
+            yesterday_total_commits += len(y_commits)
+            
             # Fetch PRs
             prs = self.client.get_pull_requests_for_repo(repo_name)
             
@@ -164,22 +182,45 @@ class AnalyticsEngine:
         # Identify inactive developers
         inactive_logins = org_member_logins - active_developer_logins
         inactive_developers = []
+        
+        import json
+        from app.config import Config
+        try:
+            secure_emails = json.loads(Config.DEV_EMAILS)
+        except:
+            secure_emails = {}
+            
         for login in inactive_logins:
-            email = self.client.get_user_email(login)
+            email = secure_emails.get(login) or self.client.get_user_email(login)
             inactive_developers.append({
                 'login': login,
                 'email': email
             })
-        
+
+        if yesterday_total_commits == 0:
+            commit_trend = 0.0
+        else:
+            commit_trend = ((len(all_commits) - yesterday_total_commits) / yesterday_total_commits) * 100
+
         executive_summary = {
             'total_active_developers': len(active_developers),
             'total_commits_today': len(all_commits),
+            'yesterday_total_commits': yesterday_total_commits,
+            'commit_trend_percentage': round(commit_trend, 1),
             'total_repos_changed': len([r for r, s in repo_stats.items() if s['total_commits'] > 0]),
             'total_lines_added': total_lines_added,
             'total_lines_deleted': total_lines_deleted,
             'total_prs_opened': pr_opened,
             'total_prs_merged': pr_merged
         }
+
+        # Identify first pushes
+        for dev_key, dev_info in dev_accountability.items():
+            for r_name, r_stats in dev_info['repos'].items():
+                if r_stats['commits'] > 0:
+                    has_prior = self.client.has_prior_commits(r_name, dev_key, since)
+                    if not has_prior:
+                        r_stats['is_first_push'] = True
 
         # Transform nested dict into sorted list for template
         dev_activity_nested = []
@@ -192,7 +233,8 @@ class AnalyticsEngine:
                     'files_changed': r_stats['files_changed'],
                     'lines_added': r_stats['lines_added'],
                     'lines_deleted': r_stats['lines_deleted'],
-                    'last_push': r_stats['last_push']
+                    'last_push': r_stats['last_push'],
+                    'is_first_push': r_stats.get('is_first_push', False)
                 })
             
             repos_list.sort(key=lambda x: x['repo_name'])
