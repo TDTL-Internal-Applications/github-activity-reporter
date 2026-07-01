@@ -64,13 +64,20 @@
         </table>
         <table width="100%" cellpadding="10" cellspacing="10" style="margin-bottom: 30px; border: none; background-color: transparent;">
             <tr>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 50%;">
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 33%;">
                     <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_opened }}</div>
                     <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Opened</div>
                 </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 50%;">
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 33%;">
                     <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_merged }}</div>
                     <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Merged</div>
+                </td>
+                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 34%;">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #343a40;">🎯 Today's Focus</div>
+                    <div style="font-size: 11px; color: #495057; line-height: 1.4;">
+                        ✨ Features: {{ exec.focus_percentages.features }}% | 🐛 Bugs: {{ exec.focus_percentages.bugs }}%<br>
+                        ♻️ Refactor: {{ exec.focus_percentages.refactor }}% | 📝 Docs: {{ exec.focus_percentages.docs }}%
+                    </div>
                 </td>
             </tr>
         </table>
@@ -115,6 +122,15 @@
                         <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
                             {{ dev.developer_name }}<br>
                             <small style="color: #6c757d; font-weight: normal;">@{{ dev.github_username }}</small>
+                            {% if dev.is_spring_cleaner %}
+                                <br><span style="font-size: 10px; background-color: #28a745; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🧹 Spring Cleaner</span>
+                            {% endif %}
+                            {% if dev.is_night_owl %}
+                                <br><span style="font-size: 10px; background-color: #343a40; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🦉 Night Owl</span>
+                            {% endif %}
+                            {% if dev.streak >= 3 %}
+                                <br><span style="font-size: 10px; background-color: #ff5722; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🔥 {{ dev.streak }}-Day Streak</span>
+                            {% endif %}
                         </td>
                         {% endif %}
                         <td>
@@ -262,7 +278,8 @@
 
 
 
-        <div class="footer">
+        <div class="footer" style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px;">
+            <div style="font-style: italic; margin-bottom: 15px; font-size: 14px; color: #495057;">{{ quote }}</div>
             Automated Daily GitHub Engineering Report • Generated via Python
         </div>
     </div>
