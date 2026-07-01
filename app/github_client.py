@@ -69,6 +69,7 @@ class GitHubClient:
         return {}
 
     def get_pull_requests_for_repo(self, repo_name: str) -> List[Dict]:
+        # We fetch recently updated PRs and filter them in the analytics layer
         url = f"{self.base_url}/repos/{self.org_name}/{repo_name}/pulls"
         params = {"state": "all", "sort": "updated", "direction": "desc"}
         try:
@@ -99,3 +100,17 @@ class GitHubClient:
             user_data = response.json()
             return user_data.get('email')
         return None
+
+    def has_prior_commits(self, repo_name: str, author_login: str, until: str) -> bool:
+        """Check if an author has any commits in a repo before a certain date."""
+        url = f"{self.base_url}/repos/{self.org_name}/{repo_name}/commits"
+        params = {"author": author_login, "until": until, "per_page": 1}
+        try:
+            response = requests.get(url, headers=self.headers, params=params)
+            if response.status_code == 200:
+                commits = response.json()
+                return len(commits) > 0
+        except requests.exceptions.RequestException:
+            pass
+        return False
+
