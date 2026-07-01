@@ -40,7 +40,13 @@
                 </td>
                 <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
                     <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_commits_today }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Commits Today</div>
+                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">
+                        Commits Today
+                        <br>
+                        <span style="font-size: 10px; font-weight: bold; color: {{ '#28a745' if exec.commit_trend_percentage >= 0 else '#dc3545' }};">
+                            {{ '📈 +' if exec.commit_trend_percentage >= 0 else '📉 ' }}{{ exec.commit_trend_percentage }}%
+                        </span>
+                    </div>
                 </td>
                 <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
                     <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_repos_changed }}</div>
@@ -111,7 +117,12 @@
                             <small style="color: #6c757d; font-weight: normal;">@{{ dev.github_username }}</small>
                         </td>
                         {% endif %}
-                        <td>{{ repo.repo_name }}</td>
+                        <td>
+                            {{ repo.repo_name }}
+                            {% if repo.is_first_push %}
+                                <br><span style="font-size: 10px; background-color: #ffc107; color: #000; padding: 2px 5px; border-radius: 4px; font-weight: bold;">🎉 First Push!</span>
+                            {% endif %}
+                        </td>
                         {% if repo.commits > 0 %}
                             <td>{{ repo.commits }}</td>
                             <td>{{ repo.files_changed }}</td>
