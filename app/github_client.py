@@ -114,3 +114,19 @@ class GitHubClient:
             pass
         return False
 
+    def get_recent_commit_dates(self, repo_name: str, author_login: str, per_page: int = 100) -> set:
+        """Fetch the dates of the most recent commits for a user to calculate streaks."""
+        url = f"{self.base_url}/repos/{self.org_name}/{repo_name}/commits"
+        params = {"author": author_login, "per_page": per_page}
+        dates = set()
+        try:
+            response = requests.get(url, headers=self.headers, params=params)
+            if response.status_code == 200:
+                for commit in response.json():
+                    date_str = commit.get('commit', {}).get('author', {}).get('date')
+                    if date_str:
+                        dates.add(date_str)
+        except requests.exceptions.RequestException:
+            pass
+        return dates
+
