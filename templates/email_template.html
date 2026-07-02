@@ -166,6 +166,23 @@
                     <div class="bar-container" style="margin: 5px auto 0 auto;"><div class="bar-deleted" style="width: {{ (exec.total_lines_deleted / max_lines * 100)|round }}%;"></div></div>
                 </td>
             </tr>
+            <tr>
+                <td class="summary-card" colspan="2" style="text-align: left; padding-left: 30px;">
+                    <div class="summary-val" style="color: #58a6ff;">{{ exec.total_prs_opened }}</div>
+                    <div class="summary-label">PRs Opened</div>
+                </td>
+                <td class="summary-card" style="text-align: left; padding-left: 30px;">
+                    <div class="summary-val" style="color: #58a6ff;">{{ exec.total_prs_merged }}</div>
+                    <div class="summary-label">PRs Merged</div>
+                </td>
+                <td class="summary-card" colspan="2" style="text-align: left; padding-left: 30px;">
+                    <div style="font-weight: bold; color: #ffffff; margin-bottom: 10px;">🎯 Today's Focus</div>
+                    <div style="font-size: 12px; color: #8b949e;">
+                        ✨ Features: {{ exec.focus_percentages.features }}% | 🐛 Bugs: {{ exec.focus_percentages.bugs }}%<br>
+                        ♻️ Refactor: {{ exec.focus_percentages.refactor }}% | 📝 Docs: {{ exec.focus_percentages.docs }}%
+                    </div>
+                </td>
+            </tr>
         </table>
 
         <!-- 2. PROJECT ACCOUNTABILITY DASHBOARD -->
