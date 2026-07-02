@@ -31,12 +31,13 @@ jobs:
 
       - name: Run Daily Report Generator
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          GITHUB_ORG_NAME: ${{ secrets.GITHUB_ORG_NAME }}
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_TOKEN }}
+          GITHUB_ORG_NAME: ${{ secrets.ORG_NAME }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           DAILY_RECEIVERS: ${{ secrets.DAILY_RECEIVERS }}
+          WEEKLY_RECEIVERS: ${{ secrets.WEEKLY_RECEIVERS }}
         run: |
           python main.py --type daily
