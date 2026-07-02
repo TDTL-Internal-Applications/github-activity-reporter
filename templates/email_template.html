@@ -210,8 +210,8 @@
         </table>
 
         <!-- 4. INACTIVE DEVELOPERS -->
-        {% if inactive_developers %}
         <h2>4. Inactive Developers (Warning Sent)</h2>
+        {% if inactive_developers %}
         <table>
             <thead>
                 <tr>
@@ -228,6 +228,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <p style="text-align: center; color: #6c757d; margin-bottom: 30px;">All developers are active {{ 'this week' if report_type == 'Weekly' else 'today' }}.</p>
         {% endif %}
 
         <!-- 5. REPOSITORY SUMMARY -->
