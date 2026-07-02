@@ -169,36 +169,10 @@
         <p style="text-align: center;">No project configuration found.</p>
         {% endif %}
 
-        <!-- 3. COMMIT DETAILS -->
-        <h2>3. Commit Details</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Developer</th>
-                    <th>Repository</th>
-                    <th>Message</th>
-                    <th>SHA</th>
-                    <th>Time (UTC)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for commit in commits[:50] %} <!-- Limit to 50 for email size -->
-                <tr>
-                    <td>{{ commit.commit.author.name }}</td>
-                    <td>{{ commit.html_url.split('/')[4] if commit.html_url else 'Unknown' }}</td>
-                    <td>{{ commit.commit.message.split('\n')[0][:50] }}...</td>
-                    <td><a href="{{ commit.html_url }}">{{ commit.sha[:7] }}</a></td>
-                    <td>{{ commit.commit.author.date[:19].replace('T', ' ') }}</td>
-                </tr>
-                {% endfor %}
-                {% if not commits %}
-                <tr><td colspan="5" style="text-align: center;">No commits in this project {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
 
-        <!-- 4. PULL REQUEST DETAILS -->
-        <h2>4. Pull Request Details</h2>
+
+        <!-- 3. PULL REQUEST DETAILS -->
+        <h2>3. Pull Request Details</h2>
         <table>
             <thead>
                 <tr>
@@ -235,9 +209,9 @@
             </tbody>
         </table>
 
-        <!-- 6. INACTIVE DEVELOPERS -->
+        <!-- 4. INACTIVE DEVELOPERS -->
         {% if inactive_developers %}
-        <h2>6. Inactive Developers (Warning Sent)</h2>
+        <h2>4. Inactive Developers (Warning Sent)</h2>
         <table>
             <thead>
                 <tr>
@@ -256,8 +230,8 @@
         </table>
         {% endif %}
 
-        <!-- 7. REPOSITORY SUMMARY -->
-        <h2>7. Repository Summary</h2>
+        <!-- 5. REPOSITORY SUMMARY -->
+        <h2>5. Repository Summary</h2>
         <table>
             <thead>
                 <tr>
@@ -303,6 +277,34 @@
         </style>
         
 
+
+        <!-- 6. COMMIT DETAILS -->
+        <h2>6. Commit Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Developer</th>
+                    <th>Repository</th>
+                    <th>Message</th>
+                    <th>SHA</th>
+                    <th>Time (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commit in commits[:50] %} <!-- Limit to 50 for email size -->
+                <tr>
+                    <td>{{ commit.commit.author.name }}</td>
+                    <td>{{ commit.html_url.split('/')[4] if commit.html_url else 'Unknown' }}</td>
+                    <td>{{ commit.commit.message.split('\n')[0][:50] }}...</td>
+                    <td><a href="{{ commit.html_url }}">{{ commit.sha[:7] }}</a></td>
+                    <td>{{ commit.commit.author.date[:19].replace('T', ' ') }}</td>
+                </tr>
+                {% endfor %}
+                {% if not commits %}
+                <tr><td colspan="5" style="text-align: center;">No commits {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
 
         <div class="footer" style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px;">
             <div style="font-style: italic; margin-bottom: 15px; font-size: 14px; color: #495057;">{{ quote }}</div>
