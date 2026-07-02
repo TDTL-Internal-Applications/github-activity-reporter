@@ -4,103 +4,175 @@
     <meta charset="UTF-8">
     <title>{{ report_type }} GitHub Engineering Report</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1, h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
-        tr:hover { background-color: #f1f3f5; }
-        .success { color: #28a745; font-weight: bold; }
-        .danger { color: #dc3545; font-weight: bold; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .badge-danger { background-color: #dc3545; color: white; }
-        .badge-success { background-color: #28a745; color: white; }
-        .summary-cards { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; }
-        .card { background: #f8f9fa; border-radius: 6px; padding: 15px; flex: 1; min-width: 120px; text-align: center; border: 1px solid #dee2e6; }
-        .card-value { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px; }
-        .card-label { font-size: 12px; color: #6c757d; text-transform: uppercase; }
-        .alert-section { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 30px; }
-        .alert-item { margin-bottom: 10px; }
-        .footer { text-align: center; font-size: 12px; color: #adb5bd; margin-top: 40px; }
+        /* CORE DARK MODE & NEON THEME */
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #0d1117; /* GitHub dark background */
+            color: #c9d1d9; /* Standard dark text */
+            margin: 0; 
+            padding: 20px; 
+            line-height: 1.5;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: #161b22; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 1px solid #30363d;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+        }
+        
+        /* HEADINGS */
+        h1 { color: #ffffff; border-bottom: 2px solid #30363d; padding-bottom: 15px; font-size: 26px; }
+        h2 { color: #58a6ff; font-size: 18px; margin-top: 40px; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* GENERAL TYPOGRAPHY */
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        p { color: #8b949e; }
+
+        /* SUMMARY CARDS (Top Dashboard) */
+        .summary-grid { width: 100%; border-collapse: separate; border-spacing: 15px 0; margin-bottom: 30px; }
+        .summary-card { 
+            background: #21262d; 
+            border: 1px solid #30363d; 
+            border-radius: 8px; 
+            padding: 20px; 
+            text-align: center; 
+            width: 25%;
+        }
+        .summary-val { font-size: 28px; font-weight: 800; color: #ffffff; margin-bottom: 5px; }
+        .summary-label { font-size: 11px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .trend-up { color: #3fb950; font-weight: bold; font-size: 11px;}
+        .trend-down { color: #f85149; font-weight: bold; font-size: 11px;}
+        
+        /* CARD-BASED TABLES */
+        .card-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-bottom: 20px; }
+        .card-table th { 
+            padding: 10px 15px; 
+            text-align: left; 
+            font-size: 12px; 
+            color: #8b949e; 
+            text-transform: uppercase; 
+            font-weight: 600; 
+            border-bottom: 1px solid #30363d;
+        }
+        .card-table td { 
+            padding: 15px; 
+            background: #21262d; 
+            border-top: 1px solid #30363d;
+            border-bottom: 1px solid #30363d;
+            color: #c9d1d9;
+            font-size: 14px;
+        }
+        .card-table td:first-child { border-left: 1px solid #30363d; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        .card-table td:last-child { border-right: 1px solid #30363d; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        
+        /* HIGHLIGHT COLORS */
+        .success { color: #3fb950; font-weight: 600; }
+        .danger { color: #f85149; font-weight: 600; }
+        
+        /* VISUAL IMPACT BARS */
+        .bar-container { width: 100px; background-color: #0d1117; border-radius: 4px; overflow: hidden; height: 6px; margin-top: 5px; }
+        .bar-added { background-color: #3fb950; height: 100%; float: left; }
+        .bar-deleted { background-color: #f85149; height: 100%; float: left; }
+
+        /* GLOSSY GAMIFICATION BADGES */
+        .badge { 
+            display: inline-block; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-top: 4px;
+        }
+        .badge-streak { background: linear-gradient(135deg, #ff7a18, #af002d); color: white; border: 1px solid #ff7a18; }
+        .badge-first { background: linear-gradient(135deg, #f1c40f, #e67e22); color: #000; border: 1px solid #f1c40f; }
+        .badge-merged { background: linear-gradient(135deg, #2ea043, #238636); color: white; border: 1px solid #3fb950; }
+        .badge-closed { background: linear-gradient(135deg, #da3633, #b62324); color: white; border: 1px solid #f85149; }
+        .badge-open { background: linear-gradient(135deg, #1f6feb, #388bfd); color: white; border: 1px solid #58a6ff; }
+        .badge-role { background: #30363d; color: #c9d1d9; border-radius: 4px; box-shadow: none; font-size: 10px; border: 1px solid #484f58; }
+
+        /* PROJECT GROUP HEADERS */
+        .project-header { background: #161b22; color: #58a6ff; font-weight: bold; font-size: 16px; padding: 15px 0 5px 0; }
+        
+        /* COMMIT TIMELINE (Section 6) */
+        .timeline-table { width: 100%; border-collapse: collapse; }
+        .timeline-td-line { width: 30px; border-right: 2px solid #30363d; position: relative; padding: 15px 0; }
+        .timeline-dot { 
+            position: absolute; 
+            right: -6px; 
+            top: 20px; 
+            width: 10px; 
+            height: 10px; 
+            background: #58a6ff; 
+            border-radius: 50%; 
+            box-shadow: 0 0 8px #58a6ff;
+        }
+        .timeline-td-content { padding: 15px 20px; }
+        .timeline-card {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px 15px;
+        }
+        .commit-meta { font-size: 12px; color: #8b949e; margin-bottom: 5px; }
+        .commit-msg { font-size: 14px; color: #c9d1d9; font-weight: 500; }
+        .commit-sha { float: right; font-family: monospace; background: #161b22; padding: 2px 6px; border-radius: 4px; border: 1px solid #30363d;}
+
+        /* FOOTER */
+        .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #30363d; color: #8b949e; font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>{{ report_type }} GitHub Engineering Activity Report</h1>
-        <p>Date: {{ date }}</p>
+        <p style="margin-top: -10px; font-size: 14px;">Date: {{ date }}</p>
 
         <!-- 1. EXECUTIVE SUMMARY -->
         <h2>1. Executive Summary</h2>
-        <table width="100%" cellpadding="10" cellspacing="10" style="margin-bottom: 10px; border: none; background-color: transparent;">
+        <table class="summary-grid">
             <tr>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_active_developers }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Active Devs</div>
+                <td class="summary-card">
+                    <div class="summary-val">{{ exec.total_active_developers }}</div>
+                    <div class="summary-label">Active Devs</div>
                 </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_commits_today }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">
-                        Commits {{ 'This Week' if report_type == 'Weekly' else 'Today' }}
-                        <br>
-                        <span style="font-size: 10px; font-weight: bold; color: {{ '#28a745' if exec.commit_trend_percentage >= 0 else '#dc3545' }};">
+                <td class="summary-card">
+                    <div class="summary-val">{{ exec.total_commits_today }}</div>
+                    <div class="summary-label">
+                        Commits {{ 'This Week' if report_type == 'Weekly' else 'Today' }}<br>
+                        <span class="{{ 'trend-up' if exec.commit_trend_percentage >= 0 else 'trend-down' }}">
                             {{ '📈 +' if exec.commit_trend_percentage >= 0 else '📉 ' }}{{ exec.commit_trend_percentage }}%
                         </span>
                     </div>
                 </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_repos_changed }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Repos Changed</div>
+                <td class="summary-card">
+                    <div class="summary-val">{{ exec.total_repos_changed }}</div>
+                    <div class="summary-label">Repos Changed</div>
                 </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #28a745; margin-bottom: 5px;">+{{ exec.total_lines_added }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Lines Added</div>
+                <td class="summary-card">
+                    <div class="summary-val success">+{{ exec.total_lines_added }}</div>
+                    <div class="summary-label">Lines Added</div>
+                    {% set max_lines = (exec.total_lines_added + exec.total_lines_deleted) if (exec.total_lines_added + exec.total_lines_deleted) > 0 else 1 %}
+                    <div class="bar-container" style="margin: 5px auto 0 auto;"><div class="bar-added" style="width: {{ (exec.total_lines_added / max_lines * 100)|round }}%;"></div></div>
                 </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">-{{ exec.total_lines_deleted }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">Lines Deleted</div>
-                </td>
-            </tr>
-        </table>
-        <table width="100%" cellpadding="10" cellspacing="10" style="margin-bottom: 30px; border: none; background-color: transparent;">
-            <tr>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 33%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_opened }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Opened</div>
-                </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 33%;">
-                    <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_prs_merged }}</div>
-                    <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">PRs Merged</div>
-                </td>
-                <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 34%;">
-                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #343a40;">🎯 Today's Focus</div>
-                    <div style="font-size: 11px; color: #495057; line-height: 1.4;">
-                        ✨ Features: {{ exec.focus_percentages.features }}% | 🐛 Bugs: {{ exec.focus_percentages.bugs }}%<br>
-                        ♻️ Refactor: {{ exec.focus_percentages.refactor }}% | 📝 Docs: {{ exec.focus_percentages.docs }}%
-                    </div>
+                <td class="summary-card">
+                    <div class="summary-val danger">-{{ exec.total_lines_deleted }}</div>
+                    <div class="summary-label">Lines Deleted</div>
+                    <div class="bar-container" style="margin: 5px auto 0 auto;"><div class="bar-deleted" style="width: {{ (exec.total_lines_deleted / max_lines * 100)|round }}%;"></div></div>
                 </td>
             </tr>
         </table>
-
-        <!-- 5. ALERTS SECTION -->
-        {% if alerts %}
-        <h2>5. Alerts</h2>
-        <div class="alert-section">
-            {% for alert in alerts %}
-            <div class="alert-item">
-                <span class="badge badge-danger">ALERT</span> 
-                <strong>{{ alert.alert }}</strong> by {{ alert.developer }} in {{ alert.repo }} 
-                (<a href="{{ alert.url }}">{{ alert.sha }}</a>)
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
 
         <!-- 2. PROJECT ACCOUNTABILITY DASHBOARD -->
         <h2>2. Project Accountability Dashboard</h2>
         {% for project in projects %}
-        <h3 style="margin-top: 30px; border-bottom: 2px solid #007bff; padding-bottom: 5px; color: #343a40;">📁 Project: {{ project.project_name }}</h3>
-        <table>
+        <div class="project-header">📁 Project: {{ project.project_name }}</div>
+        <table class="card-table">
             <thead>
                 <tr>
                     <th>Role</th>
@@ -108,72 +180,71 @@
                     <th>Repository</th>
                     <th>Commits</th>
                     <th>Files</th>
-                    <th>Added</th>
-                    <th>Deleted</th>
-                    <th>Net</th>
+                    <th>Impact (+/-)</th>
                     <th>Last Push (UTC)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for dev in project.developers %}
-                {% set outer_loop = loop %}
-                {% set repos_count = dev.repos|length %}
-                {% if repos_count > 0 %}
+                {% if dev.repos %}
                     {% for repo in dev.repos %}
-                    <tr style="background-color: {{ '#ffffff' if outer_loop.index % 2 == 1 else '#f8f9fa' }};">
-                        {% if loop.index == 1 %}
-                        <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
-                            {{ dev.role }}
-                        </td>
-                        <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
-                            {{ dev.developer_name }}<br>
-                            <small style="color: #6c757d; font-weight: normal;">@{{ dev.github_username }}</small>
-                            {% if dev.is_spring_cleaner %}
-                                <br><span style="font-size: 10px; background-color: #28a745; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🧹 Spring Cleaner</span>
-                            {% endif %}
-                            {% if dev.is_night_owl %}
-                                <br><span style="font-size: 10px; background-color: #343a40; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🦉 Night Owl</span>
-                            {% endif %}
+                    <tr>
+                        {% if loop.first %}
+                        <td rowspan="{{ dev.repos|length }}"><span class="badge badge-role">{{ dev.role }}</span></td>
+                        <td rowspan="{{ dev.repos|length }}">
+                            <strong style="color: #ffffff;">{{ dev.name }}</strong><br>
+                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.username }}</span>
                             {% if dev.streak >= 3 %}
-                                <br><span style="font-size: 10px; background-color: #ff5722; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;">🔥 {{ dev.streak }}-Day Streak</span>
+                                <br><span class="badge badge-streak">🔥 {{ dev.streak }}-Day Streak</span>
+                            {% endif %}
+                            {% if repo.commits > 0 and dev.total_commits == repo.commits and dev.streak == 1 %}
+                                <br><span class="badge badge-first">🎉 First Push!</span>
                             {% endif %}
                         </td>
                         {% endif %}
-                        <td>
-                            {{ repo.repo_name }}
-                            {% if repo.is_first_push %}
-                                <br><span style="font-size: 10px; background-color: #ffc107; color: #000; padding: 2px 5px; border-radius: 4px; font-weight: bold;">🎉 First Push!</span>
-                            {% endif %}
-                        </td>
+                        <td>{{ repo.name }}</td>
                         {% if repo.commits > 0 %}
-                            <td>{{ repo.commits }}</td>
+                            <td><strong style="color: #58a6ff; font-size: 16px;">{{ repo.commits }}</strong></td>
                             <td>{{ repo.files_changed }}</td>
-                            <td class="success">+{{ repo.lines_added }}</td>
-                            <td class="danger">-{{ repo.lines_deleted }}</td>
-                            <td>{{ repo.lines_added - repo.lines_deleted }}</td>
-                            <td>{{ repo.last_push[:19].replace('T', ' ') }}</td>
+                            <td>
+                                <span class="success">+{{ repo.lines_added }}</span> / <span class="danger">-{{ repo.lines_deleted }}</span>
+                                {% set dev_max = (repo.lines_added + repo.lines_deleted) if (repo.lines_added + repo.lines_deleted) > 0 else 1 %}
+                                <div class="bar-container" style="width: 80px;">
+                                    <div class="bar-added" style="width: {{ (repo.lines_added / dev_max * 100)|round }}%;"></div>
+                                    <div class="bar-deleted" style="width: {{ (repo.lines_deleted / dev_max * 100)|round }}%;"></div>
+                                </div>
+                            </td>
+                            <td style="font-size: 12px; color: #8b949e;">{{ repo.last_push[:19].replace('T', ' ') }}</td>
                         {% else %}
-                            <td colspan="6" style="text-align: center; color: #dc3545; font-weight: bold; background-color: rgba(220,53,69,0.05);">⛔ No Push</td>
+                            <td colspan="4" style="text-align: center; color: #f85149; font-weight: bold; font-size: 12px;">⛔ No Push</td>
                         {% endif %}
                     </tr>
                     {% endfor %}
+                {% else %}
+                    <tr>
+                        <td><span class="badge badge-role">{{ dev.role }}</span></td>
+                        <td>
+                            <strong style="color: #ffffff;">{{ dev.name }}</strong><br>
+                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.username }}</span>
+                        </td>
+                        <td colspan="5" style="text-align: center; color: #8b949e; font-style: italic;">No activity logged.</td>
+                    </tr>
                 {% endif %}
                 {% endfor %}
-                {% if not project.developers %}
-                <tr><td colspan="9" style="text-align: center;">No developers configured for this project.</td></tr>
+                {% set total_proj_commits = project.developers|map(attribute='total_commits')|sum %}
+                {% if total_proj_commits == 0 %}
+                <tr><td colspan="7" style="text-align: center; color: #8b949e; font-style: italic;">No commits in this project {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
                 {% endif %}
             </tbody>
         </table>
         {% endfor %}
         {% if not projects %}
-        <p style="text-align: center;">No project configuration found.</p>
+        <p style="text-align: center; color: #8b949e;">No project configuration found.</p>
         {% endif %}
-
-
 
         <!-- 3. PULL REQUEST DETAILS -->
         <h2>3. Pull Request Details</h2>
-        <table>
+        <table class="card-table">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -181,30 +252,28 @@
                     <th>Developer</th>
                     <th>Status</th>
                     <th>Created (UTC)</th>
-                    <th>Merged (UTC)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pr in prs %}
                 <tr>
-                    <td><a href="{{ pr.html_url }}">{{ pr.title[:40] }}...</a></td>
+                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><a href="{{ pr.html_url }}" style="color: #ffffff; font-weight: 500;">{{ pr.title }}</a></td>
                     <td>{{ pr.base.repo.name }}</td>
                     <td>{{ pr.user.login }}</td>
                     <td>
                         {% if pr.merged_at %}
-                        <span class="badge badge-success">Merged</span>
+                        <span class="badge badge-merged">Merged</span>
                         {% elif pr.state == 'closed' %}
-                        <span class="badge badge-danger">Closed</span>
+                        <span class="badge badge-closed">Closed</span>
                         {% else %}
-                        <span class="badge" style="background: #17a2b8; color: white;">Open</span>
+                        <span class="badge badge-open">Open</span>
                         {% endif %}
                     </td>
-                    <td>{{ pr.created_at[:19].replace('T', ' ') }}</td>
-                    <td>{{ pr.merged_at[:19].replace('T', ' ') if pr.merged_at else '-' }}</td>
+                    <td style="font-size: 12px; color: #8b949e;">{{ pr.created_at[:19].replace('T', ' ') }}</td>
                 </tr>
                 {% endfor %}
                 {% if not prs %}
-                <tr><td colspan="6" style="text-align: center;">No pull requests {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: #8b949e; font-style: italic;">No pull requests {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -212,7 +281,7 @@
         <!-- 4. INACTIVE DEVELOPERS -->
         <h2>4. Inactive Developers (Warning Sent)</h2>
         {% if inactive_developers %}
-        <table>
+        <table class="card-table">
             <thead>
                 <tr>
                     <th>Developer Username</th>
@@ -222,95 +291,80 @@
             <tbody>
                 {% for dev in inactive_developers %}
                 <tr>
-                    <td>{{ dev.login }}</td>
-                    <td>{{ dev.email if dev.email else 'Private (Email Skipped)' }}</td>
+                    <td><strong style="color: #f85149;">{{ dev.login }}</strong></td>
+                    <td style="color: #8b949e;">{{ dev.email if dev.email else 'Private (Email Skipped)' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-        <p style="text-align: center; color: #6c757d; margin-bottom: 30px;">All developers are active {{ 'this week' if report_type == 'Weekly' else 'today' }}.</p>
+        <p style="text-align: center; color: #3fb950; margin-bottom: 30px; font-weight: bold;">All developers are active {{ 'this week' if report_type == 'Weekly' else 'today' }}!</p>
         {% endif %}
 
         <!-- 5. REPOSITORY SUMMARY -->
         <h2>5. Repository Summary</h2>
-        <table>
+        <table class="card-table">
             <thead>
                 <tr>
                     <th>Repository</th>
                     <th>Total Commits</th>
                     <th>Contributors</th>
-                    <th>Lines Added</th>
-                    <th>Lines Deleted</th>
+                    <th>Impact (+/-)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for repo_name, stats in repo_summary.items() %}
                 {% if stats.total_commits > 0 %}
                 <tr>
-                    <td>{{ repo_name }}</td>
-                    <td>{{ stats.total_commits }}</td>
+                    <td><strong style="color: #ffffff;">{{ repo_name }}</strong></td>
+                    <td><span style="color: #58a6ff; font-weight: bold; font-size: 16px;">{{ stats.total_commits }}</span></td>
                     <td>{{ stats.contributors }}</td>
-                    <td class="success">+{{ stats.lines_added }}</td>
-                    <td class="danger">-{{ stats.lines_deleted }}</td>
+                    <td>
+                        <span class="success">+{{ stats.lines_added }}</span> / <span class="danger">-{{ stats.lines_deleted }}</span>
+                        {% set repo_max = (stats.lines_added + stats.lines_deleted) if (stats.lines_added + stats.lines_deleted) > 0 else 1 %}
+                        <div class="bar-container" style="width: 100px;">
+                            <div class="bar-added" style="width: {{ (stats.lines_added / repo_max * 100)|round }}%;"></div>
+                            <div class="bar-deleted" style="width: {{ (stats.lines_deleted / repo_max * 100)|round }}%;"></div>
+                        </div>
+                    </td>
                 </tr>
                 {% endif %}
                 {% endfor %}
                 {% if not repo_summary %}
-                <tr><td colspan="5" style="text-align: center;">No active repositories today.</td></tr>
+                <tr><td colspan="4" style="text-align: center; color: #8b949e; font-style: italic;">No active repositories {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
                 {% endif %}
             </tbody>
         </table>
 
-
-        <style>
-            @keyframes pulseLogo {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            .animated-logo {
-                max-width: 350px;
-                height: auto;
-                margin: 20px auto;
-                display: block;
-                animation: pulseLogo 4s infinite ease-in-out;
-            }
-        </style>
-        
-
-
-        <!-- 6. COMMIT DETAILS -->
+        <!-- 6. COMMIT TIMELINE -->
         <h2>6. Commit Details</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Developer</th>
-                    <th>Repository</th>
-                    <th>Message</th>
-                    <th>SHA</th>
-                    <th>Time (UTC)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for commit in commits[:50] %} <!-- Limit to 50 for email size -->
-                <tr>
-                    <td>{{ commit.commit.author.name }}</td>
-                    <td>{{ commit.html_url.split('/')[4] if commit.html_url else 'Unknown' }}</td>
-                    <td>{{ commit.commit.message.split('\n')[0][:50] }}...</td>
-                    <td><a href="{{ commit.html_url }}">{{ commit.sha[:7] }}</a></td>
-                    <td>{{ commit.commit.author.date[:19].replace('T', ' ') }}</td>
-                </tr>
-                {% endfor %}
-                {% if not commits %}
-                <tr><td colspan="5" style="text-align: center;">No commits {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
-                {% endif %}
-            </tbody>
+        <table class="timeline-table">
+            {% for commit in commits[:50] %}
+            <tr>
+                <td class="timeline-td-line"><div class="timeline-dot"></div></td>
+                <td class="timeline-td-content">
+                    <div class="timeline-card">
+                        <div class="commit-meta">
+                            <strong style="color: #ffffff;">{{ commit.commit.author.name }}</strong> pushed to <span style="color: #58a6ff;">{{ commit.html_url.split('/')[4] if commit.html_url else 'Unknown' }}</span>
+                            at {{ commit.commit.author.date[:19].replace('T', ' ') }}
+                            <a href="{{ commit.html_url }}" class="commit-sha">{{ commit.sha[:7] }}</a>
+                        </div>
+                        <div class="commit-msg">{{ commit.commit.message.split('\n')[0][:80] }}...</div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not commits %}
+            <tr>
+                <td style="text-align: center; color: #8b949e; padding: 20px; font-style: italic;">No commits {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td>
+            </tr>
+            {% endif %}
         </table>
 
-        <div class="footer" style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px;">
-            <div style="font-style: italic; margin-bottom: 15px; font-size: 14px; color: #495057;">{{ quote }}</div>
-            <strong>The Data Tech Labs</strong>
+        <div class="footer">
+            <div style="font-style: italic; margin-bottom: 15px; font-size: 14px; color: #8b949e;">"{{ quote }}"</div>
+            <strong style="color: #c9d1d9;">The Data Tech Labs</strong><br>
+            <span style="font-size: 10px;">Automated GitHub Engine</span>
         </div>
     </div>
 </body>
