@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Daily GitHub Engineering Report</title>
+    <title>{{ report_type }} GitHub Engineering Report</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>GitHub Engineering Activity Report</h1>
+        <h1>{{ report_type }} GitHub Engineering Activity Report</h1>
         <p>Date: {{ date }}</p>
 
         <!-- 1. EXECUTIVE SUMMARY -->
@@ -41,7 +41,7 @@
                 <td align="center" style="background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6; width: 20%;">
                     <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">{{ exec.total_commits_today }}</div>
                     <div style="font-size: 12px; color: #6c757d; text-transform: uppercase;">
-                        Commits Today
+                        Commits {{ 'This Week' if report_type == 'Weekly' else 'Today' }}
                         <br>
                         <span style="font-size: 10px; font-weight: bold; color: {{ '#28a745' if exec.commit_trend_percentage >= 0 else '#dc3545' }};">
                             {{ '📈 +' if exec.commit_trend_percentage >= 0 else '📉 ' }}{{ exec.commit_trend_percentage }}%
@@ -96,11 +96,14 @@
         </div>
         {% endif %}
 
-        <!-- 2. DEVELOPER ACCOUNTABILITY DASHBOARD -->
-        <h2>2. Developer Accountability Dashboard</h2>
+        <!-- 2. PROJECT ACCOUNTABILITY DASHBOARD -->
+        <h2>2. Project Accountability Dashboard</h2>
+        {% for project in projects %}
+        <h3 style="margin-top: 30px; border-bottom: 2px solid #007bff; padding-bottom: 5px; color: #343a40;">📁 Project: {{ project.project_name }}</h3>
         <table>
             <thead>
                 <tr>
+                    <th>Role</th>
                     <th>Developer</th>
                     <th>Repository</th>
                     <th>Commits</th>
@@ -112,13 +115,16 @@
                 </tr>
             </thead>
             <tbody>
-                {% for dev in dev_activity %}
+                {% for dev in project.developers %}
                 {% set outer_loop = loop %}
                 {% set repos_count = dev.repos|length %}
                 {% if repos_count > 0 %}
                     {% for repo in dev.repos %}
                     <tr style="background-color: {{ '#ffffff' if outer_loop.index % 2 == 1 else '#f8f9fa' }};">
                         {% if loop.index == 1 %}
+                        <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
+                            {{ dev.role }}
+                        </td>
                         <td rowspan="{{ repos_count }}" style="vertical-align: top; border-right: 1px solid #ddd; font-weight: bold;">
                             {{ dev.developer_name }}<br>
                             <small style="color: #6c757d; font-weight: normal;">@{{ dev.github_username }}</small>
@@ -153,11 +159,15 @@
                     {% endfor %}
                 {% endif %}
                 {% endfor %}
-                {% if not dev_activity %}
-                <tr><td colspan="8" style="text-align: center;">No developer config found.</td></tr>
+                {% if not project.developers %}
+                <tr><td colspan="9" style="text-align: center;">No developers configured for this project.</td></tr>
                 {% endif %}
             </tbody>
         </table>
+        {% endfor %}
+        {% if not projects %}
+        <p style="text-align: center;">No project configuration found.</p>
+        {% endif %}
 
         <!-- 3. COMMIT DETAILS -->
         <h2>3. Commit Details</h2>
@@ -182,7 +192,7 @@
                 </tr>
                 {% endfor %}
                 {% if not commits %}
-                <tr><td colspan="5" style="text-align: center;">No commits today.</td></tr>
+                <tr><td colspan="5" style="text-align: center;">No commits in this project {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -220,7 +230,7 @@
                 </tr>
                 {% endfor %}
                 {% if not prs %}
-                <tr><td colspan="6" style="text-align: center;">No pull requests today.</td></tr>
+                <tr><td colspan="6" style="text-align: center;">No pull requests {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -277,8 +287,26 @@
         </table>
 
 
+        <style>
+            @keyframes pulseLogo {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            .animated-logo {
+                max-width: 350px;
+                height: auto;
+                margin: 20px auto;
+                display: block;
+                animation: pulseLogo 4s infinite ease-in-out;
+            }
+        </style>
+        
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+            <img src="https://tdtl.world/logo512.png" alt="The DataTech Labs" class="animated-logo" />
+        </div>
 
-        <div class="footer" style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px;">
+        <div class="footer" style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
             <div style="font-style: italic; margin-bottom: 15px; font-size: 14px; color: #495057;">{{ quote }}</div>
             Automated Daily GitHub Engineering Report • Generated via Python
         </div>
