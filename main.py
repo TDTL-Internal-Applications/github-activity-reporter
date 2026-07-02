@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import argparse
 from app.config import Config
 from app.github_client import GitHubClient
 from app.analytics import AnalyticsEngine
@@ -8,13 +9,18 @@ from app.report_generator import ReportGenerator
 from app.email_sender import EmailSender
 
 def main():
+    parser = argparse.ArgumentParser(description="Generate GitHub Engineering Activity Report")
+    parser.add_argument('--type', choices=['daily', 'weekly'], default='daily', help='Type of report to generate (daily or weekly)')
+    args = parser.parse_args()
+    report_type = args.type
+
     try:
         Config.validate()
     except ValueError as e:
         print(f"Configuration Error: {e}")
         sys.exit(1)
         
-    print("Starting Daily GitHub Engineering Activity Report generation...")
+    print(f"Starting {report_type.capitalize()} GitHub Engineering Activity Report generation...")
 
     # Initialize GitHub Client
     client = GitHubClient(
@@ -25,35 +31,43 @@ def main():
     # Fetch and process data
     print("Fetching data from GitHub API...")
     
-    # Load team config
-    team_config = {}
-    if os.path.exists("team_config.json"):
-        with open("team_config.json", "r", encoding="utf-8") as f:
-            team_config = json.load(f)
-            print(f"Loaded team config for {len(team_config.get('developers', []))} developers.")
+    # Load project config
+    project_config = {}
+    if os.path.exists("project_config.json"):
+        with open("project_config.json", "r", encoding="utf-8") as f:
+            project_config = json.load(f)
+            print(f"Loaded project config for {len(project_config.get('projects', []))} projects.")
     
-    engine = AnalyticsEngine(client, team_config=team_config)
-    report_data = engine.run_daily_analytics()
+    engine = AnalyticsEngine(client, team_config=project_config)
+    report_data = engine.run_analytics(report_type=report_type)
     
     # Generate HTML Report
     print("Generating HTML report...")
     generator = ReportGenerator()
-    html_content = generator.generate_html(report_data)
+    html_content = generator.generate_html(report_data, report_type=report_type)
 
     # For debugging, we can save a local copy
     with open("latest_report.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
     # Send Main Report Email
-    print("Sending main report email...")
-    receivers = [email.strip() for email in Config.RECEIVER_EMAIL.split(',')]
-    sender = EmailSender(
-        host=Config.SMTP_HOST,
-        port=Config.SMTP_PORT,
-        email=Config.SMTP_EMAIL,
-        password=Config.SMTP_PASSWORD
-    )
-    sender.send_email(receivers, html_content)
+    print(f"Sending main {report_type} report email...")
+    if report_type == 'weekly':
+        receivers_str = Config.WEEKLY_RECEIVERS
+    else:
+        receivers_str = Config.DAILY_RECEIVERS
+        
+    receivers = [email.strip() for email in receivers_str.split(',') if email.strip()]
+    if receivers:
+        sender = EmailSender(
+            host=Config.SMTP_HOST,
+            port=Config.SMTP_PORT,
+            email=Config.SMTP_EMAIL,
+            password=Config.SMTP_PASSWORD
+        )
+        sender.send_email(receivers, html_content, subject_prefix=f"[{report_type.capitalize()}]")
+    else:
+        print(f"No receivers configured for {report_type} report. Skipping email.")
 
     # Send Warning Emails to Inactive Developers
     print("Checking for inactive developers...")
