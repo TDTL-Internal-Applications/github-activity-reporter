@@ -8,19 +8,21 @@ class ReportGenerator:
         self.env = Environment(loader=FileSystemLoader(templates_dir))
         self.template = self.env.get_template("email_template.html")
 
-    def generate_html(self, data: dict) -> str:
+    def generate_html(self, data: dict, report_type: str = 'daily') -> str:
         ist_tz = pytz.timezone('Asia/Kolkata')
         current_date = datetime.now(ist_tz).strftime("%d/%m/%Y")
         
         return self.template.render(
+            report_type=report_type.capitalize(),
             date=current_date,
             exec=data.get('executive_summary', {}),
             alerts=data.get('alerts', []),
-            dev_activity=data.get('developer_activity', []),
+            projects=data.get('projects', []),
             commits=data.get('commits', []),
             prs=data.get('prs', []),
             repo_summary=data.get('repo_summary', {}),
-            inactive_developers=data.get('inactive_developers', [])
+            inactive_developers=data.get('inactive_developers', []),
+            quote=data.get('quote', '')
         )
 
     def generate_warning_html(self, username: str) -> str:

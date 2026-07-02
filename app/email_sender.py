@@ -11,10 +11,10 @@ class EmailSender:
         self.email = email
         self.password = password
 
-    def send_email(self, receivers: list, html_content: str):
+    def send_email(self, receivers: list, html_content: str, subject_prefix: str = "[Daily]"):
         ist_tz = pytz.timezone('Asia/Kolkata')
         current_date = datetime.now(ist_tz).strftime("%d/%m/%Y")
-        subject = f"[Daily GitHub Engineering Report] - {current_date}"
+        subject = f"{subject_prefix} GitHub Engineering Report - {current_date}"
 
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
