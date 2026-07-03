@@ -235,6 +235,7 @@
                     <th>Commits</th>
                     <th>Files</th>
                     <th>Code Focus</th>
+                    <th>Impact (+/-)</th>
                     <th>Last Push (UTC)</th>
                 </tr>
             </thead>
@@ -255,12 +256,15 @@
                                 <div class="bar-deleted" style="width: {{ repo.fixes_pct }}%; background-color: #e3b341;"></div>
                             </div>
                         </td>
+                        <td>
+                            <span class="success">+{{ repo.lines_added }}</span> <span style="color: #8b949e;">/</span> <span class="danger">-{{ repo.lines_deleted }}</span>
+                        </td>
                         <td style="font-size: 12px; color: #8b949e;">{{ repo.last_push[:19].replace('T', ' ') }}</td>
                     </tr>
                     {% endfor %}
                 {% endfor %}
                 {% if not dev.projects %}
-                <tr><td colspan="6" style="text-align: center; color: #8b949e; font-style: italic;">No activity logged.</td></tr>
+                <tr><td colspan="7" style="text-align: center; color: #8b949e; font-style: italic;">No activity logged.</td></tr>
                 {% endif %}
             </tbody>
         </table>
