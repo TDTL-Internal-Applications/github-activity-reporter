@@ -234,7 +234,7 @@
                     <th>Repository</th>
                     <th>Commits</th>
                     <th>Files</th>
-                    <th>Impact (+/-)</th>
+                    <th>Code Focus</th>
                     <th>Last Push (UTC)</th>
                 </tr>
             </thead>
@@ -249,11 +249,10 @@
                         <td><strong style="color: #58a6ff; font-size: 16px;">{{ repo.commits }}</strong></td>
                         <td>{{ repo.files_changed }}</td>
                         <td>
-                            <span class="success">+{{ repo.lines_added }}</span> / <span class="danger">-{{ repo.lines_deleted }}</span>
-                            {% set dev_max = (repo.lines_added + repo.lines_deleted) if (repo.lines_added + repo.lines_deleted) > 0 else 1 %}
-                            <div class="bar-container" style="width: 80px;">
-                                <div class="bar-added" style="width: {{ (repo.lines_added / dev_max * 100)|round }}%;"></div>
-                                <div class="bar-deleted" style="width: {{ (repo.lines_deleted / dev_max * 100)|round }}%;"></div>
+                            <span style="color: #58a6ff; font-size: 12px; font-weight: bold;">✨ {{ repo.features_pct }}%</span> / <span style="color: #e3b341; font-size: 12px; font-weight: bold;">🐛 {{ repo.fixes_pct }}%</span>
+                            <div class="bar-container" style="width: 80px; margin-top: 3px;">
+                                <div class="bar-added" style="width: {{ repo.features_pct }}%; background-color: #58a6ff;"></div>
+                                <div class="bar-deleted" style="width: {{ repo.fixes_pct }}%; background-color: #e3b341;"></div>
                             </div>
                         </td>
                         <td style="font-size: 12px; color: #8b949e;">{{ repo.last_push[:19].replace('T', ' ') }}</td>
