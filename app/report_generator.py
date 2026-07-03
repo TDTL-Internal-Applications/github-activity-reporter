@@ -22,7 +22,10 @@ class ReportGenerator:
             prs=data.get('prs', []),
             repo_summary=data.get('repo_summary', {}),
             inactive_developers=data.get('inactive_developers', []),
-            quote=data.get('quote', '')
+            quote=data.get('quote', ''),
+            ai_summary=data.get('ai_summary', ''),
+            mvp=data.get('mvp'),
+            bug_squasher=data.get('bug_squasher')
         )
 
     def generate_warning_html(self, username: str) -> str:
