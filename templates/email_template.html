@@ -133,6 +133,36 @@
         <h1>{{ report_type }} GitHub Engineering Activity Report</h1>
         <p style="margin-top: -10px; font-size: 14px;">Date: {{ date }}</p>
 
+        <!-- AI SUMMARY -->
+        <div style="background: linear-gradient(135deg, #1f242c, #161b22); border-left: 4px solid #a371f7; padding: 15px 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            <div style="color: #a371f7; font-weight: bold; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">✨ AI Executive Summary</div>
+            <div style="color: #c9d1d9; font-size: 14px; line-height: 1.6;">{{ ai_summary }}</div>
+        </div>
+
+        <!-- GAMIFICATION WIDGETS -->
+        {% if mvp or bug_squasher %}
+        <table class="summary-grid" style="margin-bottom: 20px;">
+            <tr>
+                {% if mvp %}
+                <td class="summary-card" style="border-color: #d29922; background: linear-gradient(135deg, #272115, #161b22); width: 50%;">
+                    <div style="font-size: 32px; margin-bottom: 5px;">👑</div>
+                    <div class="summary-label" style="color: #d29922; margin-bottom: 5px;">MVP of the {{ 'Week' if report_type == 'Weekly' else 'Day' }}</div>
+                    <div class="summary-val" style="font-size: 20px;">{{ mvp.name }} <span style="font-size: 14px; color: #8b949e; font-weight: normal;">(@{{ mvp.name if mvp.name else 'Unknown' }})</span></div>
+                    <div style="font-size: 12px; color: #8b949e; margin-top: 5px;">Impact Score: <strong style="color: #e3b341;">{{ ((mvp.total_commits * 2) + (mvp.total_prs_merged * 10) + (mvp.total_lines_added * 0.01))|round(1) }}</strong></div>
+                </td>
+                {% endif %}
+                {% if bug_squasher and bug_squasher.bugs_squashed > 0 %}
+                <td class="summary-card" style="border-color: #238636; background: linear-gradient(135deg, #152518, #161b22); width: 50%;">
+                    <div style="font-size: 32px; margin-bottom: 5px;">🐛</div>
+                    <div class="summary-label" style="color: #3fb950; margin-bottom: 5px;">Top Bug Squasher</div>
+                    <div class="summary-val" style="font-size: 20px;">{{ bug_squasher.name }} <span style="font-size: 14px; color: #8b949e; font-weight: normal;">(@{{ bug_squasher.name if bug_squasher.name else 'Unknown' }})</span></div>
+                    <div style="font-size: 12px; color: #8b949e; margin-top: 5px;">Bugs Fixed: <strong style="color: #56d364;">{{ bug_squasher.bugs_squashed }}</strong></div>
+                </td>
+                {% endif %}
+            </tr>
+        </table>
+        {% endif %}
+
         <!-- 1. EXECUTIVE SUMMARY -->
         <h2>1. Executive Summary</h2>
         <table class="summary-grid">
@@ -209,13 +239,19 @@
                         {% if loop.first %}
                         <td rowspan="{{ dev.repos|length }}"><span class="badge badge-role">{{ dev.role }}</span></td>
                         <td rowspan="{{ dev.repos|length }}">
-                            <strong style="color: #ffffff;">{{ dev.name }}</strong><br>
-                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.username }}</span>
+                            <strong style="color: #ffffff;">{{ dev.developer_name }}</strong><br>
+                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.github_username }}</span>
                             {% if dev.streak >= 3 %}
                                 <br><span class="badge badge-streak">🔥 {{ dev.streak }}-Day Streak</span>
                             {% endif %}
                             {% if repo.commits > 0 and dev.total_commits == repo.commits and dev.streak == 1 %}
                                 <br><span class="badge badge-first">🎉 First Push!</span>
+                            {% endif %}
+                            {% if dev.is_early_bird %}
+                                <br><span class="badge" style="background: #e3b341; color: #000;">☕ Early Bird</span>
+                            {% endif %}
+                            {% if dev.is_night_owl %}
+                                <br><span class="badge" style="background: #1f242c; color: #a371f7; border: 1px solid #a371f7;">🦉 Late Night Coder</span>
                             {% endif %}
                         </td>
                         {% endif %}
@@ -326,6 +362,7 @@
                     <th>Repository</th>
                     <th>Total Commits</th>
                     <th>Contributors</th>
+                    <th>Health Grade</th>
                     <th>Impact (+/-)</th>
                 </tr>
             </thead>
@@ -336,6 +373,9 @@
                     <td><strong style="color: #ffffff;">{{ repo_name }}</strong></td>
                     <td><span style="color: #58a6ff; font-weight: bold; font-size: 16px;">{{ stats.total_commits }}</span></td>
                     <td>{{ stats.contributors }}</td>
+                    <td>
+                        <span class="badge" style="background: {{ '#3fb950' if 'A' in stats.health_grade else ('#e3b341' if 'B' in stats.health_grade else '#f85149') }}; color: {{ '#ffffff' if 'A' in stats.health_grade else '#000000' }}; font-size: 14px;">{{ stats.health_grade }}</span>
+                    </td>
                     <td>
                         <span class="success">+{{ stats.lines_added }}</span> / <span class="danger">-{{ stats.lines_deleted }}</span>
                         {% set repo_max = (stats.lines_added + stats.lines_deleted) if (stats.lines_added + stats.lines_deleted) > 0 else 1 %}
