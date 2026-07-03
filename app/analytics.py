@@ -411,47 +411,52 @@ class AnalyticsEngine:
                 min_net_lines = dev_net_lines
                 spring_cleaner = dev_key
 
+        developer_dashboards = []
         for dev_key, dev_info in dev_accountability.items():
             is_spring = (dev_key == spring_cleaner and spring_cleaner is not None)
             
+            if dev_info['total_commits'] == 0:
+                continue
+                
+            dev_projects = []
             for proj_name, proj_data in dev_info['projects'].items():
-                if proj_name not in projects_data:
-                    projects_data[proj_name] = {'project_name': proj_name, 'developers': []}
-                    
                 repos_list = []
                 for r_name, r_stats in proj_data['repos'].items():
-                    repos_list.append({
-                        'repo_name': r_name,
-                        'commits': r_stats['commits'],
-                        'files_changed': r_stats['files_changed'],
-                        'lines_added': r_stats['lines_added'],
-                        'lines_deleted': r_stats['lines_deleted'],
-                        'last_push': r_stats['last_push'],
-                        'is_first_push': r_stats.get('is_first_push', False)
+                    if r_stats['commits'] > 0:
+                        repos_list.append({
+                            'repo_name': r_name,
+                            'commits': r_stats['commits'],
+                            'files_changed': r_stats['files_changed'],
+                            'lines_added': r_stats['lines_added'],
+                            'lines_deleted': r_stats['lines_deleted'],
+                            'last_push': r_stats['last_push'],
+                            'is_first_push': r_stats.get('is_first_push', False)
+                        })
+                
+                if repos_list:
+                    repos_list.sort(key=lambda x: x['repo_name'])
+                    dev_projects.append({
+                        'project_name': proj_name,
+                        'repos': repos_list,
+                        'role': proj_data.get('role', 'Unknown')
                     })
-                
-                repos_list.sort(key=lambda x: x['repo_name'])
-                total_commits = sum(r['commits'] for r in repos_list)
-                
-                projects_data[proj_name]['developers'].append({
+                    
+            dev_projects.sort(key=lambda x: x['project_name'])
+            
+            if dev_projects:
+                developer_dashboards.append({
                     'developer_name': dev_info['name'],
                     'github_username': dev_key,
-                    'role': proj_data.get('role', 'Unknown'),
-                    'repos': repos_list,
-                    'total_commits': total_commits,
+                    'total_commits': dev_info['total_commits'],
                     'is_night_owl': dev_info.get('is_night_owl', False),
                     'is_early_bird': dev_info.get('is_early_bird', False),
                     'streak': dev_info.get('streak', 0),
-                    'is_spring_cleaner': is_spring
+                    'is_spring_cleaner': is_spring,
+                    'projects': dev_projects
                 })
 
-        # Sort developers within each project
-        for p_name, p_data in projects_data.items():
-            p_data['developers'].sort(key=lambda x: (-x['total_commits'], x['developer_name']))
-
-        # Convert to list and sort projects alphabetically
-        project_dashboards = list(projects_data.values())
-        project_dashboards.sort(key=lambda x: x['project_name'])
+        # Sort developers by total commits descending
+        developer_dashboards.sort(key=lambda x: x['total_commits'], reverse=True)
         
         import random
         quotes = [
@@ -475,7 +480,7 @@ class AnalyticsEngine:
 
         return {
             'executive_summary': executive_summary,
-            'projects': project_dashboards,
+            'developers': developer_dashboards,
             'commits': all_commits,
             'prs': all_prs,
             'alerts': alerts_list,

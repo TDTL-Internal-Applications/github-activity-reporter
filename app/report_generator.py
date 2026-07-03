@@ -17,7 +17,7 @@ class ReportGenerator:
             date=current_date,
             exec=data.get('executive_summary', {}),
             alerts=data.get('alerts', []),
-            projects=data.get('projects', []),
+            developers=data.get('developers', []),
             commits=data.get('commits', []),
             prs=data.get('prs', []),
             repo_summary=data.get('repo_summary', {}),
