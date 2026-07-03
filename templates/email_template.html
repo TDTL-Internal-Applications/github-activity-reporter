@@ -215,15 +215,22 @@
             </tr>
         </table>
 
-        <!-- 2. PROJECT ACCOUNTABILITY DASHBOARD -->
-        <h2>2. Project Accountability Dashboard</h2>
-        {% for project in projects %}
-        <div class="project-header">📁 Project: {{ project.project_name }}</div>
+        <!-- 2. EMPLOYEE ACTIVITY DASHBOARD -->
+        <h2>2. Employee Activity Dashboard</h2>
+        {% for dev in developers %}
+        <div class="project-header" style="background: #1f242c; border-left-color: #58a6ff;">
+            🧑‍💻 {{ dev.developer_name }} <span style="font-size: 14px; color: #8b949e; font-weight: normal;">(@{{ dev.github_username }})</span>
+            <span style="float: right;">
+                {% if dev.streak >= 3 %}<span class="badge badge-streak" style="margin-left: 5px;">🔥 {{ dev.streak }}-Day Streak</span>{% endif %}
+                {% if dev.is_early_bird %}<span class="badge" style="background: #e3b341; color: #000; margin-left: 5px;">☕ Early Bird</span>{% endif %}
+                {% if dev.is_night_owl %}<span class="badge" style="background: #1f242c; color: #a371f7; border: 1px solid #a371f7; margin-left: 5px;">🦉 Late Night Coder</span>{% endif %}
+                {% if dev.is_spring_cleaner %}<span class="badge" style="background: #3fb950; color: #ffffff; margin-left: 5px;">🧹 Spring Cleaner</span>{% endif %}
+            </span>
+        </div>
         <table class="card-table">
             <thead>
                 <tr>
-                    <th>Role</th>
-                    <th>Developer</th>
+                    <th>Project</th>
                     <th>Repository</th>
                     <th>Commits</th>
                     <th>Files</th>
@@ -232,67 +239,35 @@
                 </tr>
             </thead>
             <tbody>
-                {% for dev in project.developers %}
-                {% if dev.repos %}
-                    {% for repo in dev.repos %}
+                {% for proj in dev.projects %}
+                    {% for repo in proj.repos %}
                     <tr>
                         {% if loop.first %}
-                        <td rowspan="{{ dev.repos|length }}"><span class="badge badge-role">{{ dev.role }}</span></td>
-                        <td rowspan="{{ dev.repos|length }}">
-                            <strong style="color: #ffffff;">{{ dev.developer_name }}</strong><br>
-                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.github_username }}</span>
-                            {% if dev.streak >= 3 %}
-                                <br><span class="badge badge-streak">🔥 {{ dev.streak }}-Day Streak</span>
-                            {% endif %}
-                            {% if repo.commits > 0 and dev.total_commits == repo.commits and dev.streak == 1 %}
-                                <br><span class="badge badge-first">🎉 First Push!</span>
-                            {% endif %}
-                            {% if dev.is_early_bird %}
-                                <br><span class="badge" style="background: #e3b341; color: #000;">☕ Early Bird</span>
-                            {% endif %}
-                            {% if dev.is_night_owl %}
-                                <br><span class="badge" style="background: #1f242c; color: #a371f7; border: 1px solid #a371f7;">🦉 Late Night Coder</span>
-                            {% endif %}
+                        <td rowspan="{{ proj.repos|length }}"><strong style="color: #ffffff;">{{ proj.project_name }}</strong></td>
+                        {% endif %}
+                        <td>{{ repo.repo_name }}</td>
+                        <td><strong style="color: #58a6ff; font-size: 16px;">{{ repo.commits }}</strong></td>
+                        <td>{{ repo.files_changed }}</td>
+                        <td>
+                            <span class="success">+{{ repo.lines_added }}</span> / <span class="danger">-{{ repo.lines_deleted }}</span>
+                            {% set dev_max = (repo.lines_added + repo.lines_deleted) if (repo.lines_added + repo.lines_deleted) > 0 else 1 %}
+                            <div class="bar-container" style="width: 80px;">
+                                <div class="bar-added" style="width: {{ (repo.lines_added / dev_max * 100)|round }}%;"></div>
+                                <div class="bar-deleted" style="width: {{ (repo.lines_deleted / dev_max * 100)|round }}%;"></div>
+                            </div>
                         </td>
-                        {% endif %}
-                        <td>{{ repo.name }}</td>
-                        {% if repo.commits > 0 %}
-                            <td><strong style="color: #58a6ff; font-size: 16px;">{{ repo.commits }}</strong></td>
-                            <td>{{ repo.files_changed }}</td>
-                            <td>
-                                <span class="success">+{{ repo.lines_added }}</span> / <span class="danger">-{{ repo.lines_deleted }}</span>
-                                {% set dev_max = (repo.lines_added + repo.lines_deleted) if (repo.lines_added + repo.lines_deleted) > 0 else 1 %}
-                                <div class="bar-container" style="width: 80px;">
-                                    <div class="bar-added" style="width: {{ (repo.lines_added / dev_max * 100)|round }}%;"></div>
-                                    <div class="bar-deleted" style="width: {{ (repo.lines_deleted / dev_max * 100)|round }}%;"></div>
-                                </div>
-                            </td>
-                            <td style="font-size: 12px; color: #8b949e;">{{ repo.last_push[:19].replace('T', ' ') }}</td>
-                        {% else %}
-                            <td colspan="4" style="text-align: center; color: #f85149; font-weight: bold; font-size: 12px;">⛔ No Push</td>
-                        {% endif %}
+                        <td style="font-size: 12px; color: #8b949e;">{{ repo.last_push[:19].replace('T', ' ') }}</td>
                     </tr>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td><span class="badge badge-role">{{ dev.role }}</span></td>
-                        <td>
-                            <strong style="color: #ffffff;">{{ dev.name }}</strong><br>
-                            <span style="font-size: 12px; color: #8b949e;">@{{ dev.username }}</span>
-                        </td>
-                        <td colspan="5" style="text-align: center; color: #8b949e; font-style: italic;">No activity logged.</td>
-                    </tr>
-                {% endif %}
                 {% endfor %}
-                {% set total_proj_commits = project.developers|map(attribute='total_commits')|sum %}
-                {% if total_proj_commits == 0 %}
-                <tr><td colspan="7" style="text-align: center; color: #8b949e; font-style: italic;">No commits in this project {{ 'this week' if report_type == 'Weekly' else 'today' }}.</td></tr>
+                {% if not dev.projects %}
+                <tr><td colspan="6" style="text-align: center; color: #8b949e; font-style: italic;">No activity logged.</td></tr>
                 {% endif %}
             </tbody>
         </table>
         {% endfor %}
-        {% if not projects %}
-        <p style="text-align: center; color: #8b949e;">No project configuration found.</p>
+        {% if not developers %}
+        <p style="text-align: center; color: #8b949e;">No developer activity found.</p>
         {% endif %}
 
         <!-- 3. PULL REQUEST DETAILS -->
