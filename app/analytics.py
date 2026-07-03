@@ -109,7 +109,7 @@ class AnalyticsEngine:
                 dev_accountability[username]['projects'][proj_name] = {
                     'role': dev['role'],
                     'repos': {r: {
-                        'commits': 0, 'files_changed': 0, 'lines_added': 0, 'lines_deleted': 0, 'last_push': "", 'is_first_push': False
+                        'commits': 0, 'files_changed': 0, 'lines_added': 0, 'lines_deleted': 0, 'last_push': "", 'is_first_push': False, 'bugs_fixed': 0
                     } for r in assigned_repos}
                 }
         
@@ -213,7 +213,7 @@ class AnalyticsEngine:
                     # If repo not mapped for this user, add it to their first project or Unknown
                     first_proj = next(iter(dev_accountability[dev_key]['projects']))
                     dev_accountability[dev_key]['projects'][first_proj]['repos'][repo_name] = {
-                        'commits': 0, 'files_changed': 0, 'lines_added': 0, 'lines_deleted': 0, 'last_push': "", 'is_first_push': False
+                        'commits': 0, 'files_changed': 0, 'lines_added': 0, 'lines_deleted': 0, 'last_push': "", 'is_first_push': False, 'bugs_fixed': 0
                     }
                     
                 # Track developer global metrics
@@ -229,6 +229,8 @@ class AnalyticsEngine:
                         repo_stats_dev['files_changed'] += files_changed
                         repo_stats_dev['lines_added'] += additions
                         repo_stats_dev['lines_deleted'] += deletions
+                        if any(k in msg for k in ['fix', 'bug', 'resolve', 'patch', '🐛']):
+                            repo_stats_dev['bugs_fixed'] += 1
                         
                         commit_time = commit_detail.get('commit', {}).get('author', {}).get('date', '')
                         if commit_time:
@@ -423,12 +425,20 @@ class AnalyticsEngine:
                 repos_list = []
                 for r_name, r_stats in proj_data['repos'].items():
                     if r_stats['commits'] > 0:
+                        commits = r_stats['commits']
+                        fixes = r_stats.get('bugs_fixed', 0)
+                        features = commits - fixes
+                        fixes_pct = int((fixes / commits) * 100)
+                        features_pct = 100 - fixes_pct
+                        
                         repos_list.append({
                             'repo_name': r_name,
-                            'commits': r_stats['commits'],
+                            'commits': commits,
                             'files_changed': r_stats['files_changed'],
                             'lines_added': r_stats['lines_added'],
                             'lines_deleted': r_stats['lines_deleted'],
+                            'fixes_pct': fixes_pct,
+                            'features_pct': features_pct,
                             'last_push': r_stats['last_push'],
                             'is_first_push': r_stats.get('is_first_push', False)
                         })
