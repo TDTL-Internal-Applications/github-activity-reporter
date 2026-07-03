@@ -1,14 +1,38 @@
 from typing import List, Dict, Any
 from datetime import datetime, timezone
 import pytz
+import google.generativeai as genai
 from app.github_client import GitHubClient
 from app.alerts import detect_alerts
+from app.config import Config
 
 class AnalyticsEngine:
     def __init__(self, client: GitHubClient, team_config: dict = None):
         self.client = client
         self.ist_tz = pytz.timezone('Asia/Kolkata')
         self.team_config = team_config or {}
+
+    def _generate_ai_summary(self, commits: List[dict], report_type: str) -> str:
+        if not Config.GEMINI_API_KEY:
+            # Fallback heuristic summary
+            return f"The engineering team logged {len(commits)} commits { 'this week' if report_type == 'weekly' else 'today' }. Focus was distributed across feature development and bug fixes. Review the project dashboard below for individual impact."
+        
+        try:
+            genai.configure(api_key=Config.GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-pro')
+            
+            # Extract just the messages to save tokens
+            messages = [c.get('commit', {}).get('message', '').split('\n')[0] for c in commits[:100]]
+            if not messages:
+                return "No code changes were logged in this period."
+                
+            prompt = f"You are a CTO summarizing a GitHub activity report. Write a strict 2-3 sentence executive summary of the following commit messages from the engineering team. Focus on high-level business impact (e.g. 'The team heavily focused on UI overhauls...'). Do not list individual commits. Commits: {'; '.join(messages)}"
+            
+            response = model.generate_content(prompt)
+            return response.text.replace('\n', ' ').strip()
+        except Exception as e:
+            print(f"AI Summary generation failed: {e}")
+            return f"The engineering team logged {len(commits)} commits { 'this week' if report_type == 'weekly' else 'today' }."
 
     def get_time_bounds(self, report_type: str = 'daily'):
         from datetime import timedelta
@@ -170,6 +194,11 @@ class AnalyticsEngine:
                     dev_accountability[dev_key] = {
                         'name': author_name,
                         'is_night_owl': False,
+                        'is_early_bird': False,
+                        'bugs_squashed': 0,
+                        'total_commits': 0,
+                        'total_lines_added': 0,
+                        'total_prs_merged': 0,
                         'projects': {'Unknown Project': {'role': 'Unknown', 'repos': {}}}
                     }
                 
@@ -187,6 +216,12 @@ class AnalyticsEngine:
                         'commits': 0, 'files_changed': 0, 'lines_added': 0, 'lines_deleted': 0, 'last_push': "", 'is_first_push': False
                     }
                     
+                # Track developer global metrics
+                dev_accountability[dev_key]['total_commits'] += 1
+                dev_accountability[dev_key]['total_lines_added'] += additions
+                if any(k in msg for k in ['fix', 'bug', 'resolve', 'patch', '🐛']):
+                    dev_accountability[dev_key]['bugs_squashed'] += 1
+
                 for proj_name, proj_data in dev_accountability[dev_key]['projects'].items():
                     if repo_name in proj_data['repos']:
                         repo_stats_dev = proj_data['repos'][repo_name]
@@ -202,6 +237,8 @@ class AnalyticsEngine:
                                 ist_time = utc_time.astimezone(self.ist_tz)
                                 if ist_time.hour >= 22 or ist_time.hour < 4:
                                     dev_accountability[dev_key]['is_night_owl'] = True
+                                elif ist_time.hour < 8:
+                                    dev_accountability[dev_key]['is_early_bird'] = True
                             except ValueError:
                                 pass
                                 
@@ -223,12 +260,54 @@ class AnalyticsEngine:
         total_lines_added = sum(r['lines_added'] for r in repo_stats.values())
         total_lines_deleted = sum(r['lines_deleted'] for r in repo_stats.values())
         
-        pr_opened = sum(1 for pr in all_prs if pr['created_at'] >= since)
-        pr_merged = sum(1 for pr in all_prs if pr.get('merged_at') and pr['merged_at'] >= since)
+        pr_opened = 0
+        pr_merged = 0
+        for pr in all_prs:
+            if pr['created_at'] >= since:
+                pr_opened += 1
+            if pr.get('merged_at') and pr['merged_at'] >= since:
+                pr_merged += 1
+                pr_user = pr.get('user', {}).get('login')
+                if pr_user and pr_user in dev_accountability:
+                    dev_accountability[pr_user]['total_prs_merged'] += 1
         
-        # Convert set to length for repo stats
+        # Calculate MVP and Top Bug Squasher
+        mvp_dev = None
+        highest_score = -1
+        top_bug_squasher = None
+        most_bugs = 0
+        
+        for dev_key, data in dev_accountability.items():
+            # MVP Score = (Commits * 2) + (PRs Merged * 10) + (Lines Added * 0.01)
+            score = (data['total_commits'] * 2) + (data['total_prs_merged'] * 10) + (data['total_lines_added'] * 0.01)
+            if score > highest_score and data['total_commits'] > 0:
+                highest_score = score
+                mvp_dev = data
+                
+            if data['bugs_squashed'] > most_bugs:
+                most_bugs = data['bugs_squashed']
+                top_bug_squasher = data
+        
+        # Convert set to length for repo stats and calculate Health Grades
         for r_name in repo_stats:
             repo_stats[r_name]['contributors'] = len(repo_stats[r_name]['contributors'])
+            r_commits = repo_stats[r_name]['total_commits']
+            r_added = repo_stats[r_name]['lines_added']
+            r_deleted = repo_stats[r_name]['lines_deleted']
+            
+            # Simple heuristic for grading
+            if r_commits == 0:
+                grade = 'N/A'
+            elif r_added > r_deleted * 2 and r_commits >= 5:
+                grade = 'A+'
+            elif r_added > r_deleted and r_commits >= 2:
+                grade = 'A'
+            elif r_deleted > r_added * 2:
+                grade = 'C (High Churn)'
+            else:
+                grade = 'B'
+            
+            repo_stats[r_name]['health_grade'] = grade
             
         # Identify inactive developers
         inactive_logins = org_member_logins - active_developer_logins
@@ -361,6 +440,7 @@ class AnalyticsEngine:
                     'repos': repos_list,
                     'total_commits': total_commits,
                     'is_night_owl': dev_info.get('is_night_owl', False),
+                    'is_early_bird': dev_info.get('is_early_bird', False),
                     'streak': dev_info.get('streak', 0),
                     'is_spring_cleaner': is_spring
                 })
@@ -390,6 +470,9 @@ class AnalyticsEngine:
         ]
         quote_of_the_day = random.choice(quotes)
         
+        # Generate AI Summary
+        ai_summary = self._generate_ai_summary(all_commits, report_type)
+
         return {
             'executive_summary': executive_summary,
             'projects': project_dashboards,
@@ -398,5 +481,8 @@ class AnalyticsEngine:
             'alerts': alerts_list,
             'repo_summary': repo_stats,
             'inactive_developers': inactive_developers,
-            'quote': quote_of_the_day
+            'quote': quote_of_the_day,
+            'ai_summary': ai_summary,
+            'mvp': mvp_dev,
+            'bug_squasher': top_bug_squasher
         }

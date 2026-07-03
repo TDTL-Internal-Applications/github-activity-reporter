@@ -6,6 +6,7 @@ load_dotenv()
 class Config:
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
     GITHUB_ORG_NAME = os.getenv("GITHUB_ORG_NAME")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
